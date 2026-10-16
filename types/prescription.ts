@@ -22,6 +22,16 @@ export interface PatientInfo {
   };
 }
 
+export interface MedicineBuyingOption {
+  title: string;
+  source: string;
+  price?: string;
+  link: string;
+  thumbnail?: string;
+  rating?: number;
+  delivery?: string;
+}
+
 export interface PrescribedMedicine {
   id: string;
   name: string;
@@ -36,6 +46,7 @@ export interface PrescribedMedicine {
   primaryIndication: string;
   guidelines: string[];
   shortNote: string;
+  buyingOptions?: MedicineBuyingOption[];
 }
 
 export interface LabTest {
