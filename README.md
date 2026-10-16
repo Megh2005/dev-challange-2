@@ -1,36 +1,5 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+In the modern healthcare ecosystem, ***handwritten clinical prescriptions*** remain one of the most persistent and perilous bottlenecks to effective patient care, as illegible medical penmanship, hurried physician notations, and cryptic Latin abbreviations such as *OD*, *BD*, *TDS*, *PC*, and *HS* frequently lead to severe ***medication administration errors***, accidental overdoses, and adverse drug reactions. For patients and caregivers—particularly the elderly and non-native speakers—deciphering physical prescription slips is an agonizing ordeal that leaves them completely uninformed about what each medication actually contains, why it was prescribed, how it interacts with meals, or what clinical warning signs require immediate medical intervention. Traditional retail pharmacy handoffs often fail to bridge this critical information gap, forcing individuals to navigate fragmented medical jargon without a coherent, unified routine. This application is engineered specifically to eliminate this diagnostic opacity by transforming chaotic, illegible paper prescriptions into an empowering, highly legible, and structured digital healthcare companion that bridges the communication divide between doctors, pharmacists, and everyday patients.
 
-## Getting Started
+To comprehensively resolve these systemic deficiencies, the platform introduces a seamless, end-to-end ***automated prescription deciphering and clinical transcription pipeline*** that takes raw physical prescription images and translates them into an intuitive, crystal-clear patient regimen. The system instantly detects and isolates ***prescribing physician credentials***, ***patient demographic profiles***, ***clinical diagnoses***, and ***physiological vitals***, while systematically decoding obtuse prescription shorthand into everyday colloquial schedules categorized into intuitive ***morning, afternoon, and night routines***. Beyond basic text parsing, the platform enriches every identified medicine with its authentic ***active chemical salts*** and pharmacological composition, explicit therapeutic indications, patient safety guidelines, and clinical summary notes. Crucially, the solution also consolidates all prescribed ***pathology laboratory investigations*** alongside patient preparation protocols, lifestyle guidance, and follow-up consultation dates, providing an executive-grade, monochromatic ***A4 printable and downloadable PDF transcript*** governed by rigorous clinical disclaimers to ensure utmost safety, patient compliance, and seamless cross-verification with licensed healthcare professionals.
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Architecturally, the application is built on ***Next.js 14 utilizing the App Router***, modern ***TypeScript*** for end-to-end type safety, and custom solid-token ***Tailwind CSS*** for a distraction-free, zero-gradient interface optimized for maximum accessibility across all age demographics. The core intelligence engine leverages Google's multimodal ***gemini-3.5-flash-lite*** model orchestrated through the official ***Google Generative AI SDK*** and server-side ***GoogleAIFileManager***, ingesting native binary multipart form data directly into temporary file streams rather than relying on inefficient, high-latency base64 memory buffers. By employing structured JSON schema constraints and advanced prompt engineering, the model executes simultaneous ***optical character recognition (OCR)***, handwriting deciphering, abbreviation translation, and pharmacological cross-referencing without requiring fragile local knowledge bases. Full-stack observability and exception telemetry are maintained via enterprise ***@sentry/nextjs instrumentation*** across edge, server, and client runtimes, while deterministic client-side document compilation is executed via ***jsPDF and jspdf-autotable***, producing strictly monospace, grid-bordered, black-and-white vector PDFs designed for clinical longevity and uncompromising data fidelity.
