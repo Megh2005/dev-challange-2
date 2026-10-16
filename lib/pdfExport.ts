@@ -534,7 +534,7 @@ export function exportPrescriptionToPdf(result: PrescriptionScanResult) {
     doc.setTextColor(0, 0, 0);
 
     doc.text(
-      "CONFIDENTIAL MEDICAL TRANSCRIPT | BLACK & WHITE MONOSPACE A4 EXPORT",
+      "CONFIDENTIAL MEDICAL TRANSCRIPT",
       margin,
       pageHeight - margin + 4.5
     );
