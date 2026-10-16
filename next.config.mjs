@@ -1,10 +1,13 @@
 import { withSentryConfig } from '@sentry/nextjs/config';
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  images: {
+    unoptimized: true,
+  }
+};
 
 export default withSentryConfig(nextConfig, {
   // For all available options, see:
-  // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
   org: "heritage-institute-of-techn-ia",
 
