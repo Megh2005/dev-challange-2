@@ -478,6 +478,62 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                   <strong className="text-black uppercase tracking-wider font-extrabold">Clinical Summary Note: </strong>
                   <span>{med.shortNote}</span>
                 </div>
+
+                {/* Where to Buy - Top 3 Verified Online Retailers */}
+                <div className="pt-3 border-t border-slate-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-blue-700 uppercase tracking-wider block">
+                      Where to Buy ({med.name})
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      Top Retailers via Google Shopping
+                    </span>
+                  </div>
+
+                  {med.buyingOptions && med.buyingOptions.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                      {med.buyingOptions.map((opt, oIdx) => (
+                        <a
+                          key={oIdx}
+                          href={opt.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-3 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-500 rounded-xl flex flex-col justify-between transition-colors group"
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-xs font-extrabold text-black group-hover:text-blue-700 truncate">
+                                {opt.source}
+                              </span>
+                              {opt.price && (
+                                <span className="text-xs font-black text-blue-900 bg-blue-100 px-2 py-0.5 rounded shrink-0">
+                                  {opt.price}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-600 line-clamp-2 leading-snug">
+                              {opt.title}
+                            </p>
+                            {opt.delivery && (
+                              <p className="text-[10px] text-slate-500 font-medium truncate">
+                                {opt.delivery}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="pt-2 mt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-bold text-blue-700">
+                            <span>Buy Online</span>
+                            <span className="text-xs">↗</span>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-500">
+                      No direct online listings found for this formulation. Please purchase at your local licensed pharmacy.
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
