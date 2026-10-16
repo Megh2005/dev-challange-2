@@ -12,6 +12,8 @@ export default function ScanPrescriptionPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<PrescriptionScanResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [userCoordinates, setUserCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locationLabel, setLocationLabel] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -20,6 +22,26 @@ export default function ScanPrescriptionPage() {
       }
     };
   }, [previewUrl]);
+
+  // Request browser geolocation to search buying options with respect to user's exact coordinates
+  useEffect(() => {
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserCoordinates({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude
+          });
+          setLocationLabel(`Local coordinates active (${pos.coords.latitude.toFixed(2)}°, ${pos.coords.longitude.toFixed(2)}°)`);
+        },
+        (err) => {
+          console.warn("Geolocation prompt skipped or denied:", err.message);
+          setLocationLabel("Default region active");
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      );
+    }
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -57,6 +79,11 @@ export default function ScanPrescriptionPage() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
+      if (userCoordinates) {
+        formData.append("latitude", userCoordinates.latitude.toString());
+        formData.append("longitude", userCoordinates.longitude.toString());
+      }
+
       const response = await fetch("/api/scan", {
         method: "POST",
         body: formData
@@ -89,14 +116,21 @@ export default function ScanPrescriptionPage() {
       ) : (
         /* If no result yet, show the streamlined upload & scan interface */
         <div className="space-y-6">
-          {/* Page Title */}
-          <div className="pb-4 border-b border-slate-200">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-black tracking-tight">
-              Prescription Scanner &amp; Decipher
-            </h1>
-            <p className="text-sm text-slate-600 mt-1">
-              Upload a prescription photo to automatically extract medicines, plain-language dosage instructions, chemical formulas, and laboratory tests.
-            </p>
+          {/* Page Title & Geolocation Status */}
+          <div className="pb-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-black tracking-tight">
+                Prescription Scanner &amp; Decipher
+              </h1>
+              <p className="text-sm text-slate-600 mt-1">
+                Upload a prescription photo to automatically extract medicines, plain-language dosage instructions, chemical formulas, and laboratory tests.
+              </p>
+            </div>
+            {locationLabel && (
+              <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-900 border border-blue-200 self-start">
+                📍 {locationLabel}
+              </span>
+            )}
           </div>
 
           {/* Upload Card */}
