@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { PrescriptionScanResult, PrescribedMedicine } from "@/types/prescription";
+import { PrescriptionScanResult } from "@/types/prescription";
 import {
-  PrinterIcon,
-  CopyIcon,
-  CheckIcon,
   RefreshCwIcon,
-  FileTextIcon
+  FileTextIcon,
+  DownloadIcon
 } from "./icons";
+import { exportPrescriptionToPdf } from "@/lib/pdfExport";
 
 interface Props {
   result: PrescriptionScanResult;
@@ -17,84 +16,18 @@ interface Props {
 }
 
 export default function PrescriptionResultView({ result, previewUrl, onReset }: Props) {
-  const [copiedAll, setCopiedAll] = useState(false);
-  const [copiedMedId, setCopiedMedId] = useState<string | null>(null);
   const [showOriginalImage, setShowOriginalImage] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
-  const handleCopyAll = () => {
-    const lines = [
-      `==================================================`,
-      `          PRESCRIPTION ANALYSIS REPORT`,
-      `==================================================`,
-      `PHYSICIAN: ${result.doctor.name} (${result.doctor.degrees})`,
-      `REGISTRATION NO: ${result.doctor.registrationNumber}`,
-      `CLINIC / HOSPITAL: ${result.doctor.clinicOrHospital}`,
-      `DATE: ${result.doctor.consultationDate}`,
-      result.doctor.contactNumber ? `CONTACT: ${result.doctor.contactNumber}` : "",
-      ``,
-      `PATIENT: ${result.patient.name}`,
-      `AGE / GENDER: ${result.patient.age} / ${result.patient.gender}`,
-      result.patient.weight ? `WEIGHT: ${result.patient.weight}` : "",
-      `DIAGNOSIS: ${result.patient.diagnosis}`,
-      result.patient.chiefComplaints && result.patient.chiefComplaints.length > 0
-        ? `CHIEF COMPLAINTS: ${result.patient.chiefComplaints.join(", ")}`
-        : "",
-      ``,
-      `--------------------------------------------------`,
-      `DAILY MEDICATION SCHEDULE:`,
-      `--------------------------------------------------`,
-      ...result.medicines.map((m, i) => {
-        const schedule = parseTimetable(m.frequencyOriginal || m.frequencyDecoded);
-        return `${i + 1}. ${m.name} (${m.genericName})
-   - Routine: Morning: ${schedule.morning} | Afternoon: ${schedule.afternoon} | Night: ${schedule.night}
-   - Dosage: ${m.dosage}
-   - When: ${m.timingInstruction}
-   - Duration: ${m.duration}
-   - Active Composition: ${m.chemicalComposition}
-   - Why Prescribed: ${m.primaryIndication}
-   - Patient Rules: ${m.guidelines.join("; ")}
-   - Note: ${m.shortNote}\n`;
-      }),
-      result.labTests && result.labTests.length > 0
-        ? `--------------------------------------------------
-LABORATORY & DIAGNOSTIC TESTS:
---------------------------------------------------
-${result.labTests
-  .map(
-    (t, i) =>
-      `${i + 1}. ${t.testName}\n   - Purpose: ${t.clinicalReason}\n   - Preparation: ${t.instructions}`
-  )
-  .join("\n\n")}\n`
-        : "",
-      `--------------------------------------------------`,
-      `PHYSICIAN ADVICE:`,
-      `--------------------------------------------------`,
-      result.generalAdvice && result.generalAdvice.length > 0
-        ? result.generalAdvice.map((a) => `- ${a}`).join("\n")
-        : "None specified.",
-      ``,
-      `FOLLOW-UP: ${result.followUp || "As directed by physician"}`,
-      `==================================================`
-    ];
-
-    navigator.clipboard.writeText(lines.filter(Boolean).join("\n"));
-    setCopiedAll(true);
-    setTimeout(() => setCopiedAll(false), 2000);
-  };
-
-  const handleCopySingleMedicine = (med: PrescribedMedicine) => {
-    const text = `${med.name} (${med.genericName})
-- Dosage & Timing: ${med.dosage} • ${med.frequencyDecoded}
-- When: ${med.timingInstruction}
-- Course Duration: ${med.duration}
-- Active Chemical Composition: ${med.chemicalComposition}
-- Clinical Purpose: ${med.primaryIndication}
-- Safety Rules: ${med.guidelines.join("; ")}
-- Clinical Note: ${med.shortNote}`;
-
-    navigator.clipboard.writeText(text);
-    setCopiedMedId(med.id);
-    setTimeout(() => setCopiedMedId(null), 2000);
+  const handleExportPdf = () => {
+    setIsExportingPdf(true);
+    try {
+      exportPrescriptionToPdf(result);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+    } finally {
+      setIsExportingPdf(false);
+    }
   };
 
   // Helper to extract dosage quantity (e.g. 1 Tablet, 5ml, etc.)
@@ -170,9 +103,9 @@ ${result.labTests
   };
 
   return (
-    <div className="w-full space-y-8 print:m-0 print:p-0">
-      {/* Top Action Bar (Hidden when printing) */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 print:hidden">
+    <div className="w-full space-y-8">
+      {/* Top Action Bar */}
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
           <span className="w-3 h-3 rounded-full bg-blue-700"></span>
           <div>
@@ -198,31 +131,15 @@ ${result.labTests
             </button>
           )}
 
+          {/* Export PDF Button as strictly requested */}
           <button
             type="button"
-            onClick={handleCopyAll}
-            className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-800 hover:bg-slate-100 flex items-center space-x-1.5 transition-colors"
+            onClick={handleExportPdf}
+            disabled={isExportingPdf}
+            className="px-4 py-2.5 rounded-xl bg-blue-700 text-white text-xs font-extrabold hover:bg-blue-800 disabled:opacity-50 flex items-center space-x-1.5 transition-colors shadow-sm"
           >
-            {copiedAll ? (
-              <>
-                <CheckIcon className="w-4 h-4 text-blue-700" />
-                <span className="text-blue-700">Copied Transcript</span>
-              </>
-            ) : (
-              <>
-                <CopyIcon className="w-4 h-4 text-slate-600" />
-                <span>Copy Summary</span>
-              </>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-4 py-2 rounded-xl bg-blue-700 text-white text-xs font-extrabold hover:bg-blue-800 flex items-center space-x-1.5 transition-colors shadow-sm"
-          >
-            <PrinterIcon className="w-4 h-4" />
-            <span>Print Official Schedule</span>
+            <DownloadIcon className="w-4 h-4" />
+            <span>{isExportingPdf ? "Generating PDF..." : "Export PDF"}</span>
           </button>
 
           <button
@@ -238,7 +155,7 @@ ${result.labTests
 
       {/* Collapsible Original Prescription Image Preview */}
       {showOriginalImage && previewUrl && (
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 print:hidden">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
           <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
             <div>
               <h3 className="text-sm font-bold text-black uppercase tracking-wide">
@@ -268,7 +185,7 @@ ${result.labTests
       )}
 
       {/* Master Clinical Document Container */}
-      <div className="bg-white border-2 border-slate-200 rounded-2xl overflow-hidden print:border-none shadow-sm">
+      <div className="bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         {/* ========================================================================= */}
         {/* SECTION 1: OFFICIAL CONSULTATION RECORD & PATIENT PROFILE */}
         {/* ========================================================================= */}
@@ -494,14 +411,6 @@ ${result.labTests
                       </p>
                     </div>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleCopySingleMedicine(med)}
-                    className="text-xs font-bold px-3.5 py-1.5 rounded-lg bg-slate-50 border border-slate-300 text-slate-800 hover:bg-slate-100 transition-colors print:hidden"
-                  >
-                    {copiedMedId === med.id ? "Copied" : "Copy Medicine Info"}
-                  </button>
                 </div>
 
                 {/* Plain-English Schedule Strip */}
