@@ -13,7 +13,8 @@ import {
   FiUser,
   FiCalendar,
   FiPhone,
-  FiCheck
+  FiCheck,
+  FiDownload
 } from "react-icons/fi";
 
 import {
@@ -41,6 +42,7 @@ export {
   FiCalendar as CalendarIcon,
   FiPhone as PhoneIcon,
   FiCheck as CheckIcon,
+  FiDownload as DownloadIcon,
   RiMedicineBottleLine as MedicineBottleIcon,
   RiFlaskLine as FlaskIcon,
   RiHeartPulseLine as HeartPulseIcon,
