@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processPrescriptionFile } from "@/lib/geminiPrescriptionScanner";
+import { enrichMedicinesWithBuyingOptions } from "@/lib/serpShoppingService";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +18,20 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await processPrescriptionFile(file);
+
+    const latStr = formData.get("latitude") as string | null;
+    const lonStr = formData.get("longitude") as string | null;
+    const latitude = latStr ? parseFloat(latStr) : undefined;
+    const longitude = lonStr ? parseFloat(lonStr) : undefined;
+
+    const userGeo =
+      latitude !== undefined && longitude !== undefined && !isNaN(latitude) && !isNaN(longitude)
+        ? { latitude, longitude }
+        : undefined;
+
+    if (result && result.medicines && result.medicines.length > 0) {
+      result.medicines = await enrichMedicinesWithBuyingOptions(result.medicines, userGeo);
+    }
 
     return NextResponse.json({
       success: true,
