@@ -1,56 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
+import { processPrescriptionFile } from "@/lib/geminiPrescriptionScanner";
 import { enrichMedicinesWithBuyingOptions } from "@/lib/serpShoppingService";
 
 export async function POST(req: NextRequest) {
   try {
-    const contentType = req.headers.get("content-type") || "";
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
 
-    let medicines: any[] = [];
-    let latitude: number | undefined;
-    let longitude: number | undefined;
-
-    if (contentType.includes("application/json")) {
-      const body = await req.json();
-      medicines = body.medicines || [];
-      latitude = body.latitude;
-      longitude = body.longitude;
-    } else {
-      const formData = await req.formData();
-      const medsJson = formData.get("medicines");
-      if (typeof medsJson === "string") {
-        try {
-          medicines = JSON.parse(medsJson);
-        } catch {}
-      }
-      const lat = formData.get("latitude");
-      const lon = formData.get("longitude");
-      latitude = typeof lat === "string" ? parseFloat(lat) : undefined;
-      longitude = typeof lon === "string" ? parseFloat(lon) : undefined;
+    if (!file) {
+      return NextResponse.json(
+        { success: false, error: "Please upload a prescription image file." },
+        { status: 400 }
+      );
     }
 
+    const result = await processPrescriptionFile(file);
+
+    const lat = formData.get("latitude");
+    const lon = formData.get("longitude");
+    const latitude = typeof lat === "string" ? parseFloat(lat) : undefined;
+    const longitude = typeof lon === "string" ? parseFloat(lon) : undefined;
+
     const userGeo =
-      latitude !== undefined &&
-      longitude !== undefined &&
-      !isNaN(latitude) &&
-      !isNaN(longitude)
+      latitude !== undefined && longitude !== undefined && !isNaN(latitude) && !isNaN(longitude)
         ? { latitude, longitude }
         : undefined;
 
-    if (Array.isArray(medicines) && medicines.length > 0) {
-      const enriched = await enrichMedicinesWithBuyingOptions(
-        medicines,
-        userGeo
-      );
-      return NextResponse.json({ success: true, data: enriched });
+    if (result?.medicines?.length) {
+      result.medicines = await enrichMedicinesWithBuyingOptions(result.medicines, userGeo);
     }
 
-    return NextResponse.json({ success: true, data: [] });
+    return NextResponse.json({ success: true, data: result });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Medicine pricing lookup failed.";
-    return NextResponse.json(
-      { success: false, error: message },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : "Prescription analysis failed.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
