@@ -63,14 +63,6 @@ export default function Navbar() {
               <div className="w-20 h-8 bg-slate-100 animate-pulse rounded-lg" />
             ) : session?.user ? (
               <div className="flex items-center space-x-3">
-                <div className="text-right hidden sm:block">
-                  <span className="text-xs font-bold text-black block leading-none">
-                    {session.user.name || "User"}
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-medium">
-                    {session.user.email}
-                  </span>
-                </div>
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 text-slate-700 hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors cursor-pointer"
