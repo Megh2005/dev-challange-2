@@ -2,30 +2,20 @@
 
 import React, { useState, useEffect } from "react";
 import LabReportResultView from "@/components/LabReportResultView";
-import GemmaModelSetupGate from "@/components/GemmaModelSetupGate";
-import {
-  analyzeLabReportWithGemma,
-  isGemmaEngineLoaded,
-} from "@/lib/gemmaLiteRtEngine";
 import { LabReportAnalysisResult } from "@/types/labReport";
-import { UploadCloudIcon, CpuIcon } from "@/components/icons";
+import { UploadCloudIcon } from "@/components/icons";
 
 export default function LabReportsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const [isModelReady, setIsModelReady] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(
-    "Analyzing Lab Report with Gemma 4 E2B..."
+    "Analyzing Lab Report...",
   );
   const [analysisResult, setAnalysisResult] =
     useState<LabReportAnalysisResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    setIsModelReady(isGemmaEngineLoaded());
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -64,32 +54,54 @@ export default function LabReportsPage() {
       return;
     }
 
-    if (!isGemmaEngineLoaded()) {
-      setErrorMessage(
-        "Please download and mount the Gemma 4 E2B model artifact on WebGPU above before analyzing."
-      );
-      return;
-    }
-
     setIsAnalyzing(true);
     setErrorMessage(null);
-    setAnalysisProgress("Initializing Gemma 4 E2B WebGPU vision pipelines...");
+    setAnalysisProgress("Extracting laboratory readings & patient profile...");
 
     try {
-      // Execute on-device multimodal vision inference using Gemma 4 E2B
-      const result = await analyzeLabReportWithGemma(
-        selectedFile,
-        (progress) => {
-          setAnalysisProgress(progress.slice(-160));
-        }
-      );
+      const formData = new FormData();
+      formData.append("file", selectedFile);
 
-      setAnalysisResult(result);
-    } catch (err: any) {
-      console.error("Lab report analysis failure:", err);
+      const progressTimer1 = setTimeout(() => {
+        setAnalysisProgress(
+          "Translating medical parameters into plain layman terms...",
+        );
+      }, 3500);
+
+      const progressTimer2 = setTimeout(() => {
+        setAnalysisProgress(
+          "Computing average health score & demographic standards...",
+        );
+      }, 7000);
+
+      const response = await fetch("/api/reports/analyze", {
+        method: "POST",
+        body: formData,
+      });
+
+      clearTimeout(progressTimer1);
+      clearTimeout(progressTimer2);
+
+      const resData = await response.json();
+
+      if (resData.success && resData.data) {
+        setAnalysisResult(resData.data);
+      } else {
+        if (response.status === 401) {
+          window.location.href =
+            "/auth/signin?callbackUrl=/reports&error=SessionRequired";
+          return;
+        }
+        setErrorMessage(
+          resData.error ||
+            "Lab report analysis failed. Please verify that the image is clear and legible.",
+        );
+      }
+    } catch (err) {
       setErrorMessage(
-        err?.message ||
-          "Lab report analysis failed with Gemma 4 E2B. Please verify that the image is clear and legible."
+        err instanceof Error
+          ? err.message
+          : "Lab report analysis failed. Please try again.",
       );
     } finally {
       setIsAnalyzing(false);
@@ -108,42 +120,22 @@ export default function LabReportsPage() {
       ) : (
         /* If no result yet, show the streamlined upload & scan interface */
         <div className="space-y-6">
-          {/* Page Title & Geolocation Status */}
+          {/* Page Title */}
           <div className="pb-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-black">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-black ">
                 Pathology Lab Report Analyzer
               </h1>
               <p className="text-sm text-slate-600 mt-1">
-                Powered exclusively by Google Gemma 4 E2B on WebGPU. Translates
-                laboratory parameters into plain layman findings, computes your
-                personalized health score, and tallies with demographic
-                reference standards.
+                Upload a lab report photo to automatically decode medical
+                shorthand, calculate your personalized health score, and tally
+                findings with demographic reference standards.
               </p>
             </div>
-            <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-900 border border-blue-200 self-start">
-              Model: Gemma 4 E2B (WebGPU)
-            </span>
           </div>
 
-          {/* STEP 1: GEMMA 4 E2B MODEL SETUP GATE (Download -> Select -> Render on WebGPU) */}
-          <GemmaModelSetupGate
-            onModelReady={() => setIsModelReady(true)}
-            title="Step 1: Download & Mount Gemma 4 E2B on WebGPU"
-            description="Download the Gemma 4 E2B model binary from our website, then select the file from your local storage. MediScan mounts it directly into your local WebGPU memory for hardware-accelerated vision deciphering."
-          />
-
-          {/* STEP 2: LAB REPORT UPLOAD & VISION SCANNER CARD */}
-          <div className="bg-white rounded-2xl border-2 border-slate-300 p-6 sm:p-8 space-y-6 shadow-sm">
-            <div className="flex items-center space-x-2 pb-2 border-b border-slate-200">
-              <span className="w-6 h-6 rounded-lg bg-blue-700 text-white font-extrabold text-xs flex items-center justify-center">
-                2
-              </span>
-              <h2 className="text-base sm:text-lg font-black text-black">
-                Upload Lab Report Photo for Gemma 4 E2B Vision Analysis
-              </h2>
-            </div>
-
+          {/* Upload Card */}
+          <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 sm:p-8">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
               {/* File Picker Dropzone */}
               <div className="md:col-span-7">
@@ -187,7 +179,7 @@ export default function LabReportsPage() {
                       <button
                         type="button"
                         onClick={handleClearFile}
-                        className="text-xs font-bold text-slate-600 hover:text-black underline shrink-0 cursor-pointer"
+                        className="text-xs font-bold text-slate-600 hover:text-black underline shrink-0"
                       >
                         Remove
                       </button>
@@ -209,7 +201,7 @@ export default function LabReportsPage() {
                     </p>
                     <p className="text-xs text-slate-500">
                       Select or drop your lab report file on the left to begin
-                      Gemma 4 E2B vision extraction.
+                      automatic clinical extraction.
                     </p>
                   </div>
                 )}
@@ -220,28 +212,19 @@ export default function LabReportsPage() {
                   </div>
                 )}
 
-                {isAnalyzing && (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 text-xs font-mono truncate">
-                    {analysisProgress}
-                  </div>
-                )}
-
                 <button
                   type="button"
                   onClick={handleRunAnalysis}
                   disabled={isAnalyzing || !selectedFile}
-                  className="w-full py-4 px-6 rounded-xl bg-blue-700 text-white font-extrabold text-sm hover:bg-blue-800 disabled:opacity-50 transition-colors shadow-sm flex items-center justify-center space-x-2 cursor-pointer"
+                  className="w-full py-4 px-6 rounded-xl bg-blue-700 text-white font-extrabold text-sm hover:bg-blue-800 disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
                 >
                   {isAnalyzing ? (
                     <span className="flex items-center justify-center space-x-2">
                       <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                      <span>Deciphering with Gemma 4 E2B Vision...</span>
+                      <span>{analysisProgress}</span>
                     </span>
                   ) : (
-                    <>
-                      <CpuIcon className="w-4 h-4" />
-                      <span>Analyze Pathology Report with Gemma 4 E2B</span>
-                    </>
+                    "Analyze Lab Report"
                   )}
                 </button>
               </div>
@@ -255,26 +238,26 @@ export default function LabReportsPage() {
                 1. Layman Translation
               </h3>
               <p className="text-xs text-slate-600">
-                Gemma 4 E2B deciphers complex laboratory markers into plain,
-                understandable concepts.
+                Converts complex clinical lab shorthand and test abbreviations
+                into plain layman terms.
               </p>
             </div>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
               <h3 className="text-xs font-extrabold text-blue-700 uppercase tracking-wider">
-                2. Health Score Index
+                2. Average Health Score
               </h3>
               <p className="text-xs text-slate-600">
-                Calculates a personalized 0 to 100 average health score based on
-                your test parameters.
+                Computes an intelligent average health index from 1-100 across
+                all verified parameters.
               </p>
             </div>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
               <h3 className="text-xs font-extrabold text-blue-700 uppercase tracking-wider">
-                3. On-Device WebGPU Privacy
+                3. Demographic Standards
               </h3>
               <p className="text-xs text-slate-600">
-                Your medical reports are processed locally with Gemma 4 E2B on
-                your GPU with zero data sharing.
+                Provides standard clinical reference values broken down across
+                age brackets and gender.
               </p>
             </div>
           </div>

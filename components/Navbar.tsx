@@ -53,12 +53,6 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Gemma 4 E2B WebGPU Badge */}
-          <div className="hidden lg:flex items-center space-x-2 px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 text-xs font-bold text-blue-900">
-            <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-            <span>Gemma 4 E2B WebGPU</span>
-          </div>
-
           <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
 
           {/* Authentication Actions */}
