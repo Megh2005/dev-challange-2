@@ -2,11 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { LabReportAnalysisResult, LabReportParameter } from "@/types/labReport";
-import {
-  RefreshCwIcon,
-  FileTextIcon,
-  DownloadIcon
-} from "./icons";
+import { RefreshCwIcon, FileTextIcon, DownloadIcon } from "./icons";
 import { exportLabReportToPdf } from "@/lib/pdfExport";
 
 interface Props {
@@ -15,7 +11,11 @@ interface Props {
   onReset: () => void;
 }
 
-export default function LabReportResultView({ result, previewUrl, onReset }: Props) {
+export default function LabReportResultView({
+  result,
+  previewUrl,
+  onReset,
+}: Props) {
   const [showOriginalImage, setShowOriginalImage] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [filter, setFilter] = useState<"all" | "attention" | "optimal">("all");
@@ -40,8 +40,8 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
         filter === "all"
           ? true
           : filter === "attention"
-          ? p.status === "attention_required" || p.status === "mild_deviation"
-          : p.status === "optimal";
+            ? p.status === "attention_required" || p.status === "mild_deviation"
+            : p.status === "optimal";
 
       const query = searchTerm.toLowerCase().trim();
       const matchesSearch =
@@ -63,7 +63,8 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
   }, [filteredParameters.length, currentIndex]);
 
   const totalParams = filteredParameters.length;
-  const currentParam: LabReportParameter | undefined = filteredParameters[currentIndex];
+  const currentParam: LabReportParameter | undefined =
+    filteredParameters[currentIndex];
 
   const handlePrev = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev));
@@ -76,7 +77,10 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
   // Keyboard navigation for desktop users (Left / Right arrow keys)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
         return;
       }
       if (e.key === "ArrowLeft") {
@@ -98,7 +102,7 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
         bg: "bg-emerald-50",
         border: "border-emerald-300",
         badge: "bg-emerald-700 text-white",
-        bar: "bg-emerald-600"
+        bar: "bg-emerald-600",
       };
     }
     if (score >= 70) {
@@ -107,7 +111,7 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
         bg: "bg-blue-50",
         border: "border-blue-300",
         badge: "bg-blue-700 text-white",
-        bar: "bg-blue-600"
+        bar: "bg-blue-600",
       };
     }
     if (score >= 50) {
@@ -116,7 +120,7 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
         bg: "bg-amber-50",
         border: "border-amber-300",
         badge: "bg-amber-600 text-white",
-        bar: "bg-amber-500"
+        bar: "bg-amber-500",
       };
     }
     return {
@@ -124,7 +128,7 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
       bg: "bg-rose-50",
       border: "border-rose-300",
       badge: "bg-rose-700 text-white",
-      bar: "bg-rose-600"
+      bar: "bg-rose-600",
     };
   };
 
@@ -143,7 +147,9 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
               Pathology Report Analysis Completed
             </h2>
             <p className="text-xs text-slate-600">
-              {result.parameters.length} Clinical Parameters Extracted &bull; Health Score: {result.healthScore.score}/100 ({result.healthScore.rating})
+              {result.parameters.length} Clinical Parameters Extracted &bull;
+              Health Score: {result.healthScore.score}/100 (
+              {result.healthScore.rating})
             </p>
           </div>
         </div>
@@ -156,7 +162,11 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
               className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-800 hover:bg-slate-100 flex items-center space-x-1.5 transition-colors cursor-pointer"
             >
               <FileTextIcon className="w-4 h-4 text-slate-600" />
-              <span>{showOriginalImage ? "Hide Report Photo" : "View Original Report"}</span>
+              <span>
+                {showOriginalImage
+                  ? "Hide Report Photo"
+                  : "View Original Report"}
+              </span>
             </button>
           )}
 
@@ -193,7 +203,8 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                 Original Scanned Lab Report Slip Photo
               </h3>
               <p className="text-xs text-slate-500">
-                Cross-reference the original laboratory report slip with the digitized deciphered parameters below.
+                Cross-reference the original laboratory report slip with the
+                digitized deciphered parameters below.
               </p>
             </div>
             <button
@@ -238,15 +249,25 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Diagnostic Laboratory
               </span>
-              <h3 className="text-2xl font-black text-black tracking-tight">
+              <h3 className="text-2xl font-black text-black ">
                 {result.patient.labName || "Pathological Diagnostics Center"}
               </h3>
               <p className="text-sm font-bold text-blue-700">
                 Clinical Pathology &amp; Bio-Chemical Analysis
               </p>
               <div className="pt-2 text-xs text-slate-600 flex items-center justify-between">
-                <span>Date: <strong className="text-black">{result.patient.reportDate}</strong></span>
-                <span>Total Parameters: <strong className="text-black">{result.keyFindings.totalTestsCount}</strong></span>
+                <span>
+                  Date:{" "}
+                  <strong className="text-black">
+                    {result.patient.reportDate}
+                  </strong>
+                </span>
+                <span>
+                  Total Parameters:{" "}
+                  <strong className="text-black">
+                    {result.keyFindings.totalTestsCount}
+                  </strong>
+                </span>
               </div>
             </div>
 
@@ -256,11 +277,12 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                 Patient Overview
               </span>
               <div className="flex items-baseline space-x-3">
-                <h4 className="text-2xl font-black text-black tracking-tight">
+                <h4 className="text-2xl font-black text-black ">
                   {result.patient.name}
                 </h4>
                 <span className="text-sm font-semibold text-slate-600">
-                  ({result.patient.age || "Age not specified"}, {result.patient.gender || "Gender not specified"})
+                  ({result.patient.age || "Age not specified"},{" "}
+                  {result.patient.gender || "Gender not specified"})
                 </span>
               </div>
 
@@ -301,7 +323,9 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
 
             {/* Big Health Gauge Badge */}
             <div className="flex flex-col items-center justify-center p-5 bg-slate-50 rounded-2xl border-2 border-slate-200 min-w-[160px]">
-              <div className={`text-4xl sm:text-5xl font-black ${scoreTheme.text} leading-none`}>
+              <div
+                className={`text-4xl sm:text-5xl font-black ${scoreTheme.text} leading-none`}
+              >
                 {result.healthScore.score}
               </div>
               <span className="text-[11px] font-extrabold uppercase tracking-widest text-slate-500 mt-1">
@@ -360,7 +384,9 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
             <div className="p-5 bg-rose-50 border-2 border-rose-300 rounded-2xl space-y-2">
               <div className="flex items-center space-x-2 text-rose-950 font-black text-sm">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-600"></span>
-                <span>Priority Attention Items (Discuss with Your Physician)</span>
+                <span>
+                  Priority Attention Items (Discuss with Your Physician)
+                </span>
               </div>
               <ul className="list-disc list-inside space-y-1 text-sm font-semibold text-rose-900 pl-1">
                 {result.criticalAlerts.map((alert, idx) => (
@@ -386,7 +412,8 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                 Interactive Parameter Breakdown
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                Browse each parameter one-by-one with layman explanations and demographic standard comparisons.
+                Browse each parameter one-by-one with layman explanations and
+                demographic standard comparisons.
               </p>
             </div>
 
@@ -419,7 +446,10 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                       : "text-slate-600 hover:text-black"
                   }`}
                 >
-                  Out of Range ({result.keyFindings.deviatedCount + result.keyFindings.criticalCount})
+                  Out of Range (
+                  {result.keyFindings.deviatedCount +
+                    result.keyFindings.criticalCount}
+                  )
                 </button>
                 <button
                   type="button"
@@ -459,7 +489,8 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                     Parameter {currentIndex + 1} of {totalParams}
                   </span>
                   <span className="text-xs font-bold text-slate-600 hidden sm:inline">
-                    Use Previous / Next buttons or keyboard &larr; &rarr; arrows to browse
+                    Use Previous / Next buttons or keyboard &larr; &rarr; arrows
+                    to browse
                   </span>
                 </div>
 
@@ -471,8 +502,18 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                     disabled={currentIndex === 0}
                     className="px-4 py-2 rounded-xl border border-slate-300 bg-white font-extrabold text-xs text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center space-x-1 shadow-2xs cursor-pointer"
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 19l-7-7 7-7"
+                      />
                     </svg>
                     <span>Previous</span>
                   </button>
@@ -484,8 +525,18 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                     className="px-4 py-2 rounded-xl bg-blue-700 font-extrabold text-xs text-white hover:bg-blue-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center space-x-1 shadow-2xs cursor-pointer"
                   >
                     <span>Next</span>
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -495,14 +546,19 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
               <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-blue-700 transition-all duration-300 ease-out"
-                  style={{ width: `${((currentIndex + 1) / totalParams) * 100}%` }}
+                  style={{
+                    width: `${((currentIndex + 1) / totalParams) * 100}%`,
+                  }}
                 />
               </div>
 
               {/* Direct Jump To Parameter Selector (No Horizontal Scrolling) */}
               <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center space-x-2.5">
-                  <label htmlFor="param-selector" className="text-xs font-black uppercase tracking-wider text-slate-700 shrink-0">
+                  <label
+                    htmlFor="param-selector"
+                    className="text-xs font-black uppercase tracking-wider text-slate-700 shrink-0"
+                  >
                     Jump To:
                   </label>
                   <div className="relative">
@@ -519,8 +575,18 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                       ))}
                     </select>
                     <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </div>
                   </div>
@@ -532,7 +598,11 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                     const isActive = idx === currentIndex;
                     const isOpt = p.status === "optimal";
                     const isMild = p.status === "mild_deviation";
-                    const dotBg = isOpt ? "bg-emerald-500" : isMild ? "bg-amber-500" : "bg-rose-500";
+                    const dotBg = isOpt
+                      ? "bg-emerald-500"
+                      : isMild
+                        ? "bg-amber-500"
+                        : "bg-rose-500";
 
                     return (
                       <button
@@ -621,7 +691,8 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                 </h4>
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                Take these targeted questions to your next clinical consultation:
+                Take these targeted questions to your next clinical
+                consultation:
               </p>
               <ul className="space-y-2.5 text-sm sm:text-base text-slate-800">
                 {result.doctorDiscussionQuestions.map((q, qIdx) => (
@@ -629,7 +700,9 @@ export default function LabReportResultView({ result, previewUrl, onReset }: Pro
                     <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-900 font-black text-xs shrink-0 mt-0.5">
                       Q{qIdx + 1}
                     </span>
-                    <span className="leading-relaxed font-semibold text-black">{q}</span>
+                    <span className="leading-relaxed font-semibold text-black">
+                      {q}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -665,7 +738,7 @@ function CarouselSlideCard({
   hasPrev,
   hasNext,
   currentIndex,
-  totalParams
+  totalParams,
 }: CarouselSlideCardProps) {
   const isOptimal = param.status === "optimal";
   const isMild = param.status === "mild_deviation";
@@ -678,25 +751,25 @@ function CarouselSlideCard({
         badgeText: "text-white",
         accentBg: "bg-emerald-50/70",
         accentBorder: "border-emerald-200",
-        statusText: "Optimal Standard"
+        statusText: "Optimal Standard",
       }
     : isMild
-    ? {
-        cardBorder: "border-amber-400",
-        badgeBg: "bg-amber-600",
-        badgeText: "text-white",
-        accentBg: "bg-amber-50/70",
-        accentBorder: "border-amber-200",
-        statusText: "Mild Deviation"
-      }
-    : {
-        cardBorder: "border-rose-400",
-        badgeBg: "bg-rose-700",
-        badgeText: "text-white",
-        accentBg: "bg-rose-50/70",
-        accentBorder: "border-rose-200",
-        statusText: "Requires Attention"
-      };
+      ? {
+          cardBorder: "border-amber-400",
+          badgeBg: "bg-amber-600",
+          badgeText: "text-white",
+          accentBg: "bg-amber-50/70",
+          accentBorder: "border-amber-200",
+          statusText: "Mild Deviation",
+        }
+      : {
+          cardBorder: "border-rose-400",
+          badgeBg: "bg-rose-700",
+          badgeText: "text-white",
+          accentBg: "bg-rose-50/70",
+          accentBorder: "border-rose-200",
+          statusText: "Requires Attention",
+        };
 
   return (
     <div
@@ -713,11 +786,12 @@ function CarouselSlideCard({
               Parameter #{currentIndex + 1}
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-black tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-black text-black ">
             {param.commonName}
           </h2>
           <p className="text-sm sm:text-base font-bold text-slate-600">
-            Laboratory Technical Term: <span className="text-black font-extrabold">{param.testName}</span>
+            Laboratory Technical Term:{" "}
+            <span className="text-black font-extrabold">{param.testName}</span>
           </p>
         </div>
 
@@ -735,7 +809,9 @@ function CarouselSlideCard({
       </div>
 
       {/* 2. MAIN READING CALLOUT */}
-      <div className={`p-6 rounded-2xl border-2 ${theme.accentBorder} ${theme.accentBg} space-y-4`}>
+      <div
+        className={`p-6 rounded-2xl border-2 ${theme.accentBorder} ${theme.accentBg} space-y-4`}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
           {/* Observed Value */}
           <div className="space-y-1">
@@ -743,7 +819,7 @@ function CarouselSlideCard({
               Observed Test Result:
             </span>
             <div className="flex items-baseline space-x-2">
-              <span className="text-4xl sm:text-5xl font-black text-black tracking-tight">
+              <span className="text-4xl sm:text-5xl font-black text-black ">
                 {param.observedValue}
               </span>
               <span className="text-lg sm:text-xl font-bold text-slate-700">
@@ -803,11 +879,12 @@ function CarouselSlideCard({
       {/* 4. REFERENCE STANDARDS: Age & Gender Comparison Guide */}
       <div className="space-y-4 pt-1">
         <div>
-          <h4 className="text-base sm:text-lg font-black text-black tracking-tight">
+          <h4 className="text-base sm:text-lg font-black text-black ">
             Demographic Reference Standards (Tally With Your Age &amp; Gender)
           </h4>
           <p className="text-xs sm:text-sm font-semibold text-slate-600">
-            Standard laboratory ranges vary according to biological sex and age brackets.
+            Standard laboratory ranges vary according to biological sex and age
+            brackets.
           </p>
         </div>
 
@@ -841,35 +918,45 @@ function CarouselSlideCard({
         )}
 
         {/* Age Group Breakdown Table */}
-        {param.referenceStandards.ageStandards && param.referenceStandards.ageStandards.length > 0 && (
-          <div className="border-2 border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-            <div className="bg-slate-100 px-4 py-2.5 border-b border-slate-200">
-              <span className="text-xs font-black uppercase tracking-wider text-slate-700">
-                Age Group Reference Standards Table
-              </span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs sm:text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-extrabold">
-                  <tr>
-                    <th className="py-2.5 px-4 text-left">Age Bracket</th>
-                    <th className="py-2.5 px-4 text-right">Standard Range Value</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {param.referenceStandards.ageStandards.map((ageStd, aIdx) => (
-                    <tr key={aIdx} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-2.5 px-4 text-slate-800 font-bold">{ageStd.ageGroup}</td>
-                      <td className="py-2.5 px-4 text-right font-black text-black">
-                        {ageStd.range}
-                      </td>
+        {param.referenceStandards.ageStandards &&
+          param.referenceStandards.ageStandards.length > 0 && (
+            <div className="border-2 border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+              <div className="bg-slate-100 px-4 py-2.5 border-b border-slate-200">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-700">
+                  Age Group Reference Standards Table
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs sm:text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-extrabold">
+                    <tr>
+                      <th className="py-2.5 px-4 text-left">Age Bracket</th>
+                      <th className="py-2.5 px-4 text-right">
+                        Standard Range Value
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {param.referenceStandards.ageStandards.map(
+                      (ageStd, aIdx) => (
+                        <tr
+                          key={aIdx}
+                          className="hover:bg-slate-50 transition-colors"
+                        >
+                          <td className="py-2.5 px-4 text-slate-800 font-bold">
+                            {ageStd.ageGroup}
+                          </td>
+                          <td className="py-2.5 px-4 text-right font-black text-black">
+                            {ageStd.range}
+                          </td>
+                        </tr>
+                      ),
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Regional / Location Reference Note */}
         {param.referenceStandards.regionOrLocationNote && (
@@ -909,8 +996,18 @@ function CarouselSlideCard({
           disabled={!hasPrev}
           className="px-5 py-2.5 rounded-xl border-2 border-slate-300 bg-white font-black text-sm text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center space-x-1.5 shadow-xs cursor-pointer"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           <span>Previous Parameter</span>
         </button>
@@ -926,8 +1023,18 @@ function CarouselSlideCard({
           className="px-5 py-2.5 rounded-xl bg-blue-700 font-black text-sm text-white hover:bg-blue-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center space-x-1.5 shadow-xs cursor-pointer"
         >
           <span>Next Parameter</span>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 5l7 7-7 7"
+            />
           </svg>
         </button>
       </div>

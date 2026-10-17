@@ -2,11 +2,7 @@
 
 import React, { useState } from "react";
 import { PrescriptionScanResult } from "@/types/prescription";
-import {
-  RefreshCwIcon,
-  FileTextIcon,
-  DownloadIcon
-} from "./icons";
+import { RefreshCwIcon, FileTextIcon, DownloadIcon } from "./icons";
 import { exportPrescriptionToPdf } from "@/lib/pdfExport";
 
 interface Props {
@@ -15,7 +11,11 @@ interface Props {
   onReset: () => void;
 }
 
-export default function PrescriptionResultView({ result, previewUrl, onReset }: Props) {
+export default function PrescriptionResultView({
+  result,
+  previewUrl,
+  onReset,
+}: Props) {
   const [showOriginalImage, setShowOriginalImage] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
 
@@ -73,7 +73,12 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
       morning = "1";
       afternoon = "-";
       night = "1";
-    } else if (lower.includes("tds") || lower.includes("tid") || lower.includes("thrice") || lower.includes("three times")) {
+    } else if (
+      lower.includes("tds") ||
+      lower.includes("tid") ||
+      lower.includes("thrice") ||
+      lower.includes("three times")
+    ) {
       morning = "1";
       afternoon = "1";
       night = "1";
@@ -81,7 +86,12 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
       morning = "1";
       afternoon = "1";
       night = "1";
-    } else if (lower.includes("hs") || lower.includes("bedtime") || lower.includes("night") || lower.includes("nocte")) {
+    } else if (
+      lower.includes("hs") ||
+      lower.includes("bedtime") ||
+      lower.includes("night") ||
+      lower.includes("nocte")
+    ) {
       morning = "-";
       afternoon = "-";
       night = "1";
@@ -93,7 +103,11 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
       morning = "1";
       afternoon = "-";
       night = "-";
-    } else if (lower.includes("sos") || lower.includes("prn") || lower.includes("as needed")) {
+    } else if (
+      lower.includes("sos") ||
+      lower.includes("prn") ||
+      lower.includes("as needed")
+    ) {
       morning = "SOS";
       afternoon = "SOS";
       night = "SOS";
@@ -114,7 +128,8 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
             </h2>
             <p className="text-xs text-slate-600">
               {result.medicines.length} Medicines Identified &bull;{" "}
-              {result.labTests ? result.labTests.length : 0} Diagnostic Tests Ordered
+              {result.labTests ? result.labTests.length : 0} Diagnostic Tests
+              Ordered
             </p>
           </div>
         </div>
@@ -127,7 +142,11 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
               className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-800 hover:bg-slate-100 flex items-center space-x-1.5 transition-colors"
             >
               <FileTextIcon className="w-4 h-4 text-slate-600" />
-              <span>{showOriginalImage ? "Hide Prescription Photo" : "View Original Prescription"}</span>
+              <span>
+                {showOriginalImage
+                  ? "Hide Prescription Photo"
+                  : "View Original Prescription"}
+              </span>
             </button>
           )}
 
@@ -162,7 +181,8 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                 Original Scanned Prescription Photo
               </h3>
               <p className="text-xs text-slate-500">
-                Cross-reference the original doctor&apos;s handwriting with the digitized deciphered data below.
+                Cross-reference the original doctor&apos;s handwriting with the
+                digitized deciphered data below.
               </p>
             </div>
             <button
@@ -205,23 +225,40 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Prescribing Physician
               </span>
-              <h3 className="text-2xl font-black text-black tracking-tight">
+              <h3 className="text-2xl font-black text-black ">
                 {result.doctor.name}
               </h3>
               <p className="text-sm font-bold text-blue-700">
                 {result.doctor.degrees}
               </p>
               <p className="text-xs text-slate-700 font-medium">
-                Medical Registration No: <strong className="text-black font-bold">{result.doctor.registrationNumber}</strong>
+                Medical Registration No:{" "}
+                <strong className="text-black font-bold">
+                  {result.doctor.registrationNumber}
+                </strong>
               </p>
               <p className="text-xs text-slate-700 font-medium">
-                Clinic / Hospital: <strong className="text-black">{result.doctor.clinicOrHospital}</strong>
+                Clinic / Hospital:{" "}
+                <strong className="text-black">
+                  {result.doctor.clinicOrHospital}
+                </strong>
               </p>
               <div className="pt-2 text-xs text-slate-600 flex items-center justify-between">
-                <span>Date: <strong className="text-black">{result.doctor.consultationDate}</strong></span>
-                {result.doctor.contactNumber && result.doctor.contactNumber !== "Not stated" && (
-                  <span>Contact: <strong className="text-black">{result.doctor.contactNumber}</strong></span>
-                )}
+                <span>
+                  Date:{" "}
+                  <strong className="text-black">
+                    {result.doctor.consultationDate}
+                  </strong>
+                </span>
+                {result.doctor.contactNumber &&
+                  result.doctor.contactNumber !== "Not stated" && (
+                    <span>
+                      Contact:{" "}
+                      <strong className="text-black">
+                        {result.doctor.contactNumber}
+                      </strong>
+                    </span>
+                  )}
               </div>
             </div>
 
@@ -232,7 +269,7 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                   Patient Overview
                 </span>
                 <div className="flex items-baseline space-x-3 mt-1">
-                  <h4 className="text-2xl font-black text-black tracking-tight">
+                  <h4 className="text-2xl font-black text-black ">
                     {result.patient.name}
                   </h4>
                   <span className="text-sm font-semibold text-slate-600">
@@ -250,11 +287,13 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                 <p className="text-base font-bold text-blue-950 leading-snug">
                   {result.patient.diagnosis}
                 </p>
-                {result.patient.chiefComplaints && result.patient.chiefComplaints.length > 0 && (
-                  <p className="text-xs text-blue-900 mt-2 font-medium">
-                    <strong>Chief Complaints:</strong> {result.patient.chiefComplaints.join(", ")}
-                  </p>
-                )}
+                {result.patient.chiefComplaints &&
+                  result.patient.chiefComplaints.length > 0 && (
+                    <p className="text-xs text-blue-900 mt-2 font-medium">
+                      <strong>Chief Complaints:</strong>{" "}
+                      {result.patient.chiefComplaints.join(", ")}
+                    </p>
+                  )}
               </div>
 
               {/* Vitals */}
@@ -298,7 +337,8 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
               Patient Medication Routine (When to Take What)
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 mt-1">
-              Follow this structured routine every day. Each slot indicates the dosage count and food requirement.
+              Follow this structured routine every day. Each slot indicates the
+              dosage count and food requirement.
             </p>
           </div>
 
@@ -307,33 +347,63 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
               <thead className="bg-slate-50 border-b-2 border-slate-200 text-slate-800 font-bold">
                 <tr>
                   <th className="py-3.5 px-4">Medicine &amp; Formulation</th>
-                  <th className="py-3.5 px-3 text-center min-w-[100px]">Morning<br /><span className="text-xs font-normal text-slate-500">Breakfast</span></th>
-                  <th className="py-3.5 px-3 text-center min-w-[100px]">Afternoon<br /><span className="text-xs font-normal text-slate-500">Lunch</span></th>
-                  <th className="py-3.5 px-3 text-center min-w-[100px]">Night<br /><span className="text-xs font-normal text-slate-500">Dinner / Bed</span></th>
+                  <th className="py-3.5 px-3 text-center min-w-[100px]">
+                    Morning
+                    <br />
+                    <span className="text-xs font-normal text-slate-500">
+                      Breakfast
+                    </span>
+                  </th>
+                  <th className="py-3.5 px-3 text-center min-w-[100px]">
+                    Afternoon
+                    <br />
+                    <span className="text-xs font-normal text-slate-500">
+                      Lunch
+                    </span>
+                  </th>
+                  <th className="py-3.5 px-3 text-center min-w-[100px]">
+                    Night
+                    <br />
+                    <span className="text-xs font-normal text-slate-500">
+                      Dinner / Bed
+                    </span>
+                  </th>
                   <th className="py-3.5 px-4 min-w-[140px]">Food Relation</th>
                   <th className="py-3.5 px-4 min-w-[110px]">Course Duration</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
                 {result.medicines.map((med, idx) => {
-                  const schedule = parseTimetable(med.frequencyOriginal || med.frequencyDecoded);
+                  const schedule = parseTimetable(
+                    med.frequencyOriginal || med.frequencyDecoded,
+                  );
                   const unit = getDoseUnit(med.dosage);
 
                   return (
-                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                    <tr
+                      key={idx}
+                      className="hover:bg-slate-50 transition-colors"
+                    >
                       <td className="py-4 px-4 font-bold text-black">
-                        <div className="text-base text-black font-extrabold">{med.name}</div>
-                        <div className="text-xs font-semibold text-slate-600 mt-0.5">{med.genericName}</div>
+                        <div className="text-base text-black font-extrabold">
+                          {med.name}
+                        </div>
+                        <div className="text-xs font-semibold text-slate-600 mt-0.5">
+                          {med.genericName}
+                        </div>
                       </td>
 
                       {/* Morning Slot */}
                       <td className="py-4 px-3 text-center">
                         {schedule.morning !== "-" ? (
                           <span className="inline-block px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 font-extrabold text-blue-900 text-xs sm:text-sm">
-                            {schedule.morning} {schedule.morning !== "SOS" ? unit : ""}
+                            {schedule.morning}{" "}
+                            {schedule.morning !== "SOS" ? unit : ""}
                           </span>
                         ) : (
-                          <span className="text-slate-300 font-bold text-base">&mdash;</span>
+                          <span className="text-slate-300 font-bold text-base">
+                            &mdash;
+                          </span>
                         )}
                       </td>
 
@@ -341,10 +411,13 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                       <td className="py-4 px-3 text-center">
                         {schedule.afternoon !== "-" ? (
                           <span className="inline-block px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 font-extrabold text-blue-900 text-xs sm:text-sm">
-                            {schedule.afternoon} {schedule.afternoon !== "SOS" ? unit : ""}
+                            {schedule.afternoon}{" "}
+                            {schedule.afternoon !== "SOS" ? unit : ""}
                           </span>
                         ) : (
-                          <span className="text-slate-300 font-bold text-base">&mdash;</span>
+                          <span className="text-slate-300 font-bold text-base">
+                            &mdash;
+                          </span>
                         )}
                       </td>
 
@@ -352,10 +425,13 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                       <td className="py-4 px-3 text-center">
                         {schedule.night !== "-" ? (
                           <span className="inline-block px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 font-extrabold text-blue-900 text-xs sm:text-sm">
-                            {schedule.night} {schedule.night !== "SOS" ? unit : ""}
+                            {schedule.night}{" "}
+                            {schedule.night !== "SOS" ? unit : ""}
                           </span>
                         ) : (
-                          <span className="text-slate-300 font-bold text-base">&mdash;</span>
+                          <span className="text-slate-300 font-bold text-base">
+                            &mdash;
+                          </span>
                         )}
                       </td>
 
@@ -385,10 +461,12 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
               Section 3: Detailed Medicine Information
             </span>
             <h3 className="text-xl sm:text-2xl font-black text-black">
-              Prescribed Medicines &amp; Clinical Safety Guide ({result.medicines.length})
+              Prescribed Medicines &amp; Clinical Safety Guide (
+              {result.medicines.length})
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 mt-1">
-              Review active chemical salts, clinical indication, patient safety rules, and clinical summary for every prescribed item.
+              Review active chemical salts, clinical indication, patient safety
+              rules, and clinical summary for every prescribed item.
             </p>
           </div>
 
@@ -405,9 +483,14 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                       {idx + 1}
                     </span>
                     <div>
-                      <h4 className="text-xl font-black text-black tracking-tight">{med.name}</h4>
+                      <h4 className="text-xl font-black text-black ">
+                        {med.name}
+                      </h4>
                       <p className="text-xs font-bold text-slate-600 mt-0.5">
-                        Generic Salt / Molecule: <strong className="text-black">{med.genericName}</strong>
+                        Generic Salt / Molecule:{" "}
+                        <strong className="text-black">
+                          {med.genericName}
+                        </strong>
                       </p>
                     </div>
                   </div>
@@ -429,8 +512,12 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                   </p>
 
                   <div className="text-xs sm:text-sm font-semibold text-blue-900 flex flex-wrap gap-x-6 gap-y-1">
-                    <span><strong>When:</strong> {med.timingInstruction}</span>
-                    <span><strong>Course:</strong> {med.duration}</span>
+                    <span>
+                      <strong>When:</strong> {med.timingInstruction}
+                    </span>
+                    <span>
+                      <strong>Course:</strong> {med.duration}
+                    </span>
                   </div>
                 </div>
 
@@ -475,7 +562,9 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
 
                 {/* Single Summary Note */}
                 <div className="pt-2 text-xs sm:text-sm text-slate-700 border-t border-slate-200">
-                  <strong className="text-black uppercase tracking-wider font-extrabold">Clinical Summary Note: </strong>
+                  <strong className="text-black uppercase tracking-wider font-extrabold">
+                    Clinical Summary Note:{" "}
+                  </strong>
                   <span>{med.shortNote}</span>
                 </div>
 
@@ -530,7 +619,8 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                     </div>
                   ) : (
                     <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-500">
-                      No direct online listings found for this formulation. Please purchase at your local licensed pharmacy.
+                      No direct online listings found for this formulation.
+                      Please purchase at your local licensed pharmacy.
                     </div>
                   )}
                 </div>
@@ -549,10 +639,12 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                 Section 4: Diagnostic Tests
               </span>
               <h3 className="text-xl sm:text-2xl font-black text-black">
-                Recommended Laboratory &amp; Diagnostic Investigations ({result.labTests.length})
+                Recommended Laboratory &amp; Diagnostic Investigations (
+                {result.labTests.length})
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                Tests ordered by your physician for clinical diagnosis and continuous monitoring.
+                Tests ordered by your physician for clinical diagnosis and
+                continuous monitoring.
               </p>
             </div>
 
@@ -566,7 +658,9 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                     <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-md bg-blue-700 text-white">
                       Test #{tIdx + 1}
                     </span>
-                    <h4 className="text-base font-bold text-black">{test.testName}</h4>
+                    <h4 className="text-base font-bold text-black">
+                      {test.testName}
+                    </h4>
                   </div>
 
                   <p className="text-xs sm:text-sm text-slate-800 leading-relaxed">
@@ -610,7 +704,9 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs sm:text-sm text-slate-500">No specific dietary or lifestyle restrictions recorded.</p>
+                <p className="text-xs sm:text-sm text-slate-500">
+                  No specific dietary or lifestyle restrictions recorded.
+                </p>
               )}
             </div>
 
@@ -621,11 +717,14 @@ export default function PrescriptionResultView({ result, previewUrl, onReset }: 
               </h4>
               <div className="p-4 bg-white border-2 border-slate-200 rounded-xl">
                 <p className="text-base font-extrabold text-black">
-                  {result.followUp || "Follow up with physician as advised or if symptoms persist."}
+                  {result.followUp ||
+                    "Follow up with physician as advised or if symptoms persist."}
                 </p>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Please bring this digital record, your original prescription slip, and any completed laboratory test reports to your next appointment.
+                Please bring this digital record, your original prescription
+                slip, and any completed laboratory test reports to your next
+                appointment.
               </p>
             </div>
           </div>
