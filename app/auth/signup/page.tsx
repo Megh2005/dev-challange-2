@@ -20,7 +20,7 @@ function SignUpContent() {
       const countries = Country.getAllCountries();
       return countries.sort((a, b) => a.name.localeCompare(b.name));
     } catch {
-      return [{ name: "India", isoCode: "IN", flag: "🇮🇳" }];
+      return [{ name: "India", isoCode: "IN" }];
     }
   }, []);
 
@@ -118,7 +118,9 @@ function SignUpContent() {
         {/* Error Banner */}
         {errorMessage && (
           <div className="p-3.5 bg-red-50 border border-red-200 text-red-900 text-xs font-semibold rounded-xl flex items-start space-x-2">
-            <span className="font-bold">✕</span>
+            <svg className="w-4 h-4 shrink-0 text-red-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
             <span>{errorMessage}</span>
           </div>
         )}
@@ -192,7 +194,7 @@ function SignUpContent() {
             >
               {allCountries.map((c) => (
                 <option key={c.isoCode} value={c.name}>
-                  {c.flag ? `${c.flag} ` : ""}{c.name} ({c.isoCode})
+                  {c.name} ({c.isoCode})
                 </option>
               ))}
             </select>
