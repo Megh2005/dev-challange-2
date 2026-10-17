@@ -77,7 +77,7 @@ Each feature within the MediScan platform has been engineered to address specifi
 - **Framework**: Next.js 14 App Router with React 18 and strict TypeScript.
 - **Design System**: Solid-token Tailwind CSS with **Roboto Slab** typography on an accessible **80vw centered layout** (strictly zero gradients, zero emojis, and high-contrast clinical palettes).
 - **Authentication**: NextAuth.js credentials provider with salted `bcryptjs` password encryption, Edge middleware session validation, and MongoDB Atlas persistence.
-- **On-Device AI Intelligence**: Google Gemma 4 E2B (`gemma-4-E2B-it-web.litertlm`) executing on-device in the browser via LiteRT LM (`@litert-lm/core`) over WebGPU, delivering 100% private, hardware-accelerated multimodal vision deciphering and clinical consultation with zero cloud data transmission.
+- **Multimodal AI Intelligence**: Google frontier multimodal Gemini models (`gemini-3.5-flash-lite`) via `@google/generative-ai` and `GoogleAIFileManager` for high-throughput binary file streaming, OCR deciphering, and structured clinical analysis under deterministic JSON schema constraints.
 - **Observability**: Full-stack `@sentry/nextjs` instrumentation across client, server, and Edge runtimes for distributed tracing and exception capture.
 - **E-Commerce & Pharmacy Integration**: SerpApi Google Shopping engine with browser geolocation coordinates and server-side reverse geocoding.
 - **PDF Compilation**: Client-side jsPDF and jspdf-autotable producing monospace, monochromatic vector A4 clinical transcripts.
