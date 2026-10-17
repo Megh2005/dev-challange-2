@@ -2,8 +2,9 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { LabReportAnalysisResult, LabReportParameter } from "@/types/labReport";
-import { RefreshCwIcon, FileTextIcon, DownloadIcon } from "./icons";
+import { RefreshCwIcon, FileTextIcon, DownloadIcon, CpuIcon } from "./icons";
 import { exportLabReportToPdf } from "@/lib/pdfExport";
+import GemmaChatAssistant from "./GemmaChatAssistant";
 
 interface Props {
   result: LabReportAnalysisResult;
@@ -18,6 +19,7 @@ export default function LabReportResultView({
 }: Props) {
   const [showOriginalImage, setShowOriginalImage] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [showGemmaAssistant, setShowGemmaAssistant] = useState(false);
   const [filter, setFilter] = useState<"all" | "attention" | "optimal">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -169,6 +171,16 @@ export default function LabReportResultView({
               </span>
             </button>
           )}
+
+          {/* Consult Gemma On-Device AI */}
+          <button
+            type="button"
+            onClick={() => setShowGemmaAssistant(true)}
+            className="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-extrabold hover:bg-black flex items-center space-x-1.5 transition-colors shadow-sm cursor-pointer"
+          >
+            <CpuIcon className="w-4 h-4 text-blue-400" />
+            <span>Consult Gemma (On-Device AI)</span>
+          </button>
 
           {/* Export PDF Button matching prescription analyzer */}
           <button
@@ -710,6 +722,35 @@ export default function LabReportResultView({
           </div>
         </div>
       </div>
+
+      {/* Gemma On-Device Chat Assistant Modal */}
+      <GemmaChatAssistant
+        isOpen={showGemmaAssistant}
+        onClose={() => setShowGemmaAssistant(false)}
+        contextTitle={`Lab Report: ${result.patient.name} - Score: ${result.healthScore.score}/100`}
+        clinicalContext={`Patient Name: ${result.patient.name}, Age: ${result.patient.age || "Not specified"}, Gender: ${result.patient.gender || "Not specified"}
+Referred By: ${result.patient.referredByDoctor || "Not specified"}
+Diagnostic Lab: ${result.patient.labName}
+Health Score: ${result.healthScore.score}/100 (${result.healthScore.rating})
+Overall Summary: ${result.healthScore.summary}
+Key Findings: Total Tests: ${result.keyFindings.totalTestsCount}, Normal: ${result.keyFindings.normalCount}, Deviated: ${result.keyFindings.deviatedCount}, Critical: ${result.keyFindings.criticalCount}
+Critical Alerts: ${result.criticalAlerts.join("; ") || "None"}
+Parameters Analyzed:
+${result.parameters
+  .map(
+    (p, idx) =>
+      `${idx + 1}. ${p.testName} (${p.commonName}) | Observed: ${p.observedValue} ${p.unit} | Status: ${p.statusLabel} | Standard Range: ${p.referenceStandards.standardRange} | What It Portrays: ${p.whatItPortrays} | Actionable Tip: ${p.actionableTip || "Maintain healthy diet"}`
+  )
+  .join("\n")}
+Lifestyle Recommendations: ${result.lifestyleRecommendations.join("; ")}
+Doctor Questions: ${result.doctorDiscussionQuestions.join("; ")}`}
+        suggestedQuestions={[
+          "Can you explain why my abnormal markers are flagged in simple terms?",
+          "What dietary or hydration changes can improve these specific parameters?",
+          "Are my results within normal demographic range for my age and gender?",
+          "What should I prioritize discussing with my physician?",
+        ]}
+      />
     </div>
   );
 }

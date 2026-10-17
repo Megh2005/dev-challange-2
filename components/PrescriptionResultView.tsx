@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import { PrescriptionScanResult } from "@/types/prescription";
-import { RefreshCwIcon, FileTextIcon, DownloadIcon } from "./icons";
+import { RefreshCwIcon, FileTextIcon, DownloadIcon, CpuIcon } from "./icons";
 import { exportPrescriptionToPdf } from "@/lib/pdfExport";
+import GemmaChatAssistant from "./GemmaChatAssistant";
 
 interface Props {
   result: PrescriptionScanResult;
@@ -18,6 +19,7 @@ export default function PrescriptionResultView({
 }: Props) {
   const [showOriginalImage, setShowOriginalImage] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [showGemmaAssistant, setShowGemmaAssistant] = useState(false);
 
   const handleExportPdf = () => {
     setIsExportingPdf(true);
@@ -149,6 +151,16 @@ export default function PrescriptionResultView({
               </span>
             </button>
           )}
+
+          {/* Consult Gemma On-Device AI */}
+          <button
+            type="button"
+            onClick={() => setShowGemmaAssistant(true)}
+            className="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-extrabold hover:bg-black flex items-center space-x-1.5 transition-colors shadow-sm"
+          >
+            <CpuIcon className="w-4 h-4 text-blue-400" />
+            <span>Consult Gemma (On-Device AI)</span>
+          </button>
 
           {/* Export PDF Button as strictly requested */}
           <button
@@ -730,6 +742,41 @@ export default function PrescriptionResultView({
           </div>
         </div>
       </div>
+
+      {/* Gemma On-Device Chat Assistant Modal */}
+      <GemmaChatAssistant
+        isOpen={showGemmaAssistant}
+        onClose={() => setShowGemmaAssistant(false)}
+        contextTitle={`Prescription: ${result.doctor.name} - ${result.patient.name}`}
+        clinicalContext={`Prescribing Physician: ${result.doctor.name} (${result.doctor.degrees})
+Registration Number: ${result.doctor.registrationNumber}
+Clinic / Hospital: ${result.doctor.clinicOrHospital}
+Patient Name: ${result.patient.name}, Age: ${result.patient.age || "Adult"}, Gender: ${result.patient.gender || "Not stated"}
+Diagnosis: ${result.patient.diagnosis || "Not stated"}
+Chief Complaints: ${result.patient.chiefComplaints.join(", ") || "None"}
+Medicines Prescribed:
+${result.medicines
+  .map(
+    (m, idx) =>
+      `${idx + 1}. ${m.name} | Active Salts: ${m.chemicalComposition} | Dosage: ${m.dosage} | Timetable: ${m.frequencyDecoded} | Food Timing: ${m.timingInstruction} | Indication: ${m.primaryIndication} | Safety Guidelines: ${m.guidelines.join(", ")} | Note: ${m.shortNote}`
+  )
+  .join("\n")}
+Laboratory Tests Ordered:
+${result.labTests
+  .map(
+    (t, idx) =>
+      `${idx + 1}. ${t.testName} | Purpose: ${t.clinicalReason} | Preparation: ${t.instructions}`
+  )
+  .join("\n") || "No lab tests ordered."}
+General Medical Advice: ${result.generalAdvice.join("; ") || "Follow doctor instructions."}
+Follow-up: ${result.followUp}`}
+        suggestedQuestions={[
+          "Can you explain the food timing rules for these medicines?",
+          "Are there any drug-drug interactions between these active ingredients?",
+          "What should I do if I accidentally miss a dosage?",
+          "What questions should I ask my doctor during follow-up?",
+        ]}
+      />
     </div>
   );
 }

@@ -40,7 +40,11 @@ export default function HomePage() {
           Clear &amp; Understandable Medical Information for Everyone
         </h1>
 
-       
+        <p className="text-sm sm:text-base text-slate-600 max-w-2xl mt-4 font-medium">
+          Powered exclusively by Google Gemma 4 E2B running on-device via
+          WebGPU. Decipher hurried medical penmanship, decode Latin shorthand,
+          and analyze pathology lab reports with 100% privacy.
+        </p>
 
         {/* Primary Call to Action */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
