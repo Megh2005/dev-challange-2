@@ -93,6 +93,10 @@ export default function ScanPrescriptionPage() {
       if (resData.success) {
         setScanResult(resData.data);
       } else {
+        if (response.status === 401) {
+          window.location.href = "/auth/signin?callbackUrl=/scan&error=SessionRequired";
+          return;
+        }
         setErrorMessage(resData.error || "Prescription analysis failed. Please verify your file.");
       }
     } catch (err) {
