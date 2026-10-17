@@ -20,6 +20,10 @@ export default function HomePage() {
     {
       title: "Diagnostic Lab Tests",
       desc: "Detects recommended blood, urine, or imaging investigations with clinical purpose and fasting preparation rules."
+    },
+    {
+      title: "Pathology Health Score",
+      desc: "Upload blood reports to compute an average health score and decode parameters with age and gender standards."
     }
   ];
 
@@ -52,18 +56,26 @@ export default function HomePage() {
             <ArrowRightIcon className="w-4 h-4 ml-1" />
           </Link>
 
+          <Link
+            href="/reports"
+            className="px-6 py-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold text-base transition-colors inline-flex items-center space-x-2 border border-slate-300"
+          >
+            <FileTextIcon className="w-5 h-5 text-blue-700" />
+            <span>Analyze Pathology Report</span>
+          </Link>
+
           {!session?.user && (
             <Link
               href="/auth/signup"
-              className="px-6 py-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-base transition-colors inline-flex items-center space-x-1"
+              className="px-6 py-4 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-base transition-colors inline-flex items-center space-x-1 border border-slate-200"
             >
               <span>Create Account</span>
             </Link>
           )}
         </div>
 
-        {/* 3 Core Highlights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-12 text-left">
+        {/* 4 Core Highlights */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full mt-12 text-left">
           {coreHighlights.map((item, idx) => (
             <div
               key={idx}

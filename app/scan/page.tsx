@@ -132,7 +132,7 @@ export default function ScanPrescriptionPage() {
             </div>
             {locationLabel && (
               <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-900 border border-blue-200 self-start">
-                📍 {locationLabel}
+                Location: {locationLabel}
               </span>
             )}
           </div>

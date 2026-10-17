@@ -12,7 +12,8 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/scan", label: "Scan Prescription", icon: FileTextIcon }
+    { href: "/scan", label: "Scan Prescription", icon: FileTextIcon },
+    { href: "/reports", label: "Pathology Reports", icon: FileTextIcon }
   ];
 
   return (
