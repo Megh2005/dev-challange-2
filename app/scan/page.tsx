@@ -10,9 +10,14 @@ export default function ScanPrescriptionPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<PrescriptionScanResult | null>(null);
+  const [scanResult, setScanResult] = useState<PrescriptionScanResult | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [userCoordinates, setUserCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [userCoordinates, setUserCoordinates] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const [locationLabel, setLocationLabel] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,15 +35,17 @@ export default function ScanPrescriptionPage() {
         (pos) => {
           setUserCoordinates({
             latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude
+            longitude: pos.coords.longitude,
           });
-          setLocationLabel(`Local coordinates active (${pos.coords.latitude.toFixed(2)}°, ${pos.coords.longitude.toFixed(2)}°)`);
+          setLocationLabel(
+            `${pos.coords.latitude.toFixed(2)}°, ${pos.coords.longitude.toFixed(2)}°`,
+          );
         },
         (err) => {
           console.warn("Geolocation prompt skipped or denied:", err.message);
           setLocationLabel("Default region active");
         },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
       );
     }
   }, []);
@@ -86,7 +93,7 @@ export default function ScanPrescriptionPage() {
 
       const response = await fetch("/api/scan", {
         method: "POST",
-        body: formData
+        body: formData,
       });
 
       const resData = await response.json();
@@ -94,14 +101,18 @@ export default function ScanPrescriptionPage() {
         setScanResult(resData.data);
       } else {
         if (response.status === 401) {
-          window.location.href = "/auth/signin?callbackUrl=/scan&error=SessionRequired";
+          window.location.href =
+            "/auth/signin?callbackUrl=/scan&error=SessionRequired";
           return;
         }
-        setErrorMessage(resData.error || "Prescription analysis failed. Please verify your file.");
+        setErrorMessage(
+          resData.error ||
+            "Prescription analysis failed. Please verify your file.",
+        );
       }
     } catch (err) {
       setErrorMessage(
-        err instanceof Error ? err.message : "Prescription analysis failed."
+        err instanceof Error ? err.message : "Prescription analysis failed.",
       );
     } finally {
       setIsScanning(false);
@@ -123,11 +134,13 @@ export default function ScanPrescriptionPage() {
           {/* Page Title & Geolocation Status */}
           <div className="pb-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-black tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-black ">
                 Prescription Scanner &amp; Decipher
               </h1>
               <p className="text-sm text-slate-600 mt-1">
-                Upload a prescription photo to automatically extract medicines, plain-language dosage instructions, chemical formulas, and laboratory tests.
+                Upload a prescription photo to automatically extract medicines,
+                plain-language dosage instructions, chemical formulas, and
+                laboratory tests.
               </p>
             </div>
             {locationLabel && (
@@ -154,10 +167,13 @@ export default function ScanPrescriptionPage() {
                       <UploadCloudIcon className="w-6 h-6" />
                     </div>
                     <p className="text-base font-bold text-black">
-                      {selectedFile ? selectedFile.name : "Click to select or drag & drop prescription image"}
+                      {selectedFile
+                        ? selectedFile.name
+                        : "Click to select or drag & drop prescription image"}
                     </p>
                     <p className="text-xs text-slate-500">
-                      Supports high-resolution JPG, PNG, and WEBP doctor prescription slips
+                      Supports high-resolution JPG, PNG, and WEBP doctor
+                      prescription slips
                     </p>
                   </div>
                 </div>
@@ -169,8 +185,12 @@ export default function ScanPrescriptionPage() {
                   <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="truncate pr-2">
-                        <p className="text-sm font-bold text-black truncate">{selectedFile.name}</p>
-                        <p className="text-xs text-slate-500">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                        <p className="text-sm font-bold text-black truncate">
+                          {selectedFile.name}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {(selectedFile.size / 1024).toFixed(1)} KB
+                        </p>
                       </div>
                       <button
                         type="button"
@@ -192,9 +212,12 @@ export default function ScanPrescriptionPage() {
                   </div>
                 ) : (
                   <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center space-y-2">
-                    <p className="text-sm font-bold text-black">No prescription selected</p>
+                    <p className="text-sm font-bold text-black">
+                      No prescription selected
+                    </p>
                     <p className="text-xs text-slate-500">
-                      Select or drop your prescription file on the left to begin automatic clinical extraction.
+                      Select or drop your prescription file on the left to begin
+                      automatic clinical extraction.
                     </p>
                   </div>
                 )}
@@ -231,7 +254,8 @@ export default function ScanPrescriptionPage() {
                 1. Shorthand Decoding
               </h3>
               <p className="text-xs text-slate-600">
-                Converts OD, BD, TDS, AC, PC, and HS shorthand into clear, everyday timing instructions.
+                Converts OD, BD, TDS, AC, PC, and HS shorthand into clear,
+                everyday timing instructions.
               </p>
             </div>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
@@ -239,7 +263,8 @@ export default function ScanPrescriptionPage() {
                 2. Chemical Identification
               </h3>
               <p className="text-xs text-slate-600">
-                Identifies active pharmacological molecules, exact salt strengths, and therapeutic indication.
+                Identifies active pharmacological molecules, exact salt
+                strengths, and therapeutic indication.
               </p>
             </div>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
@@ -247,7 +272,8 @@ export default function ScanPrescriptionPage() {
                 3. Daily Timetable
               </h3>
               <p className="text-xs text-slate-600">
-                Generates a clean Morning, Afternoon, and Night routine table suitable for all ages.
+                Generates a clean Morning, Afternoon, and Night routine table
+                suitable for all ages.
               </p>
             </div>
           </div>

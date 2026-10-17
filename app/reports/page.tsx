@@ -10,8 +10,11 @@ export default function LabReportsPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisProgress, setAnalysisProgress] = useState("Analyzing Lab Report...");
-  const [analysisResult, setAnalysisResult] = useState<LabReportAnalysisResult | null>(null);
+  const [analysisProgress, setAnalysisProgress] = useState(
+    "Analyzing Lab Report...",
+  );
+  const [analysisResult, setAnalysisResult] =
+    useState<LabReportAnalysisResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,16 +63,20 @@ export default function LabReportsPage() {
       formData.append("file", selectedFile);
 
       const progressTimer1 = setTimeout(() => {
-        setAnalysisProgress("Translating medical parameters into plain layman terms...");
+        setAnalysisProgress(
+          "Translating medical parameters into plain layman terms...",
+        );
       }, 3500);
 
       const progressTimer2 = setTimeout(() => {
-        setAnalysisProgress("Computing average health score & demographic standards...");
+        setAnalysisProgress(
+          "Computing average health score & demographic standards...",
+        );
       }, 7000);
 
       const response = await fetch("/api/reports/analyze", {
         method: "POST",
-        body: formData
+        body: formData,
       });
 
       clearTimeout(progressTimer1);
@@ -81,16 +88,20 @@ export default function LabReportsPage() {
         setAnalysisResult(resData.data);
       } else {
         if (response.status === 401) {
-          window.location.href = "/auth/signin?callbackUrl=/reports&error=SessionRequired";
+          window.location.href =
+            "/auth/signin?callbackUrl=/reports&error=SessionRequired";
           return;
         }
         setErrorMessage(
-          resData.error || "Lab report analysis failed. Please verify that the image is clear and legible."
+          resData.error ||
+            "Lab report analysis failed. Please verify that the image is clear and legible.",
         );
       }
     } catch (err) {
       setErrorMessage(
-        err instanceof Error ? err.message : "Lab report analysis failed. Please try again."
+        err instanceof Error
+          ? err.message
+          : "Lab report analysis failed. Please try again.",
       );
     } finally {
       setIsAnalyzing(false);
@@ -112,11 +123,13 @@ export default function LabReportsPage() {
           {/* Page Title */}
           <div className="pb-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-black tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-black ">
                 Pathology Lab Report Analyzer
               </h1>
               <p className="text-sm text-slate-600 mt-1">
-                Upload a lab report photo to automatically decode medical shorthand, calculate your personalized health score, and tally findings with demographic reference standards.
+                Upload a lab report photo to automatically decode medical
+                shorthand, calculate your personalized health score, and tally
+                findings with demographic reference standards.
               </p>
             </div>
           </div>
@@ -138,10 +151,13 @@ export default function LabReportsPage() {
                       <UploadCloudIcon className="w-6 h-6" />
                     </div>
                     <p className="text-base font-bold text-black">
-                      {selectedFile ? selectedFile.name : "Click to select or drag & drop lab report image"}
+                      {selectedFile
+                        ? selectedFile.name
+                        : "Click to select or drag & drop lab report image"}
                     </p>
                     <p className="text-xs text-slate-500">
-                      Supports high-resolution JPG, PNG, and WEBP medical laboratory report slips
+                      Supports high-resolution JPG, PNG, and WEBP medical
+                      laboratory report slips
                     </p>
                   </div>
                 </div>
@@ -153,8 +169,12 @@ export default function LabReportsPage() {
                   <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="truncate pr-2">
-                        <p className="text-sm font-bold text-black truncate">{selectedFile.name}</p>
-                        <p className="text-xs text-slate-500">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                        <p className="text-sm font-bold text-black truncate">
+                          {selectedFile.name}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {(selectedFile.size / 1024).toFixed(1)} KB
+                        </p>
                       </div>
                       <button
                         type="button"
@@ -176,9 +196,12 @@ export default function LabReportsPage() {
                   </div>
                 ) : (
                   <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center space-y-2">
-                    <p className="text-sm font-bold text-black">No lab report selected</p>
+                    <p className="text-sm font-bold text-black">
+                      No lab report selected
+                    </p>
                     <p className="text-xs text-slate-500">
-                      Select or drop your lab report file on the left to begin automatic clinical extraction.
+                      Select or drop your lab report file on the left to begin
+                      automatic clinical extraction.
                     </p>
                   </div>
                 )}
@@ -215,7 +238,8 @@ export default function LabReportsPage() {
                 1. Layman Translation
               </h3>
               <p className="text-xs text-slate-600">
-                Converts complex clinical lab shorthand and test abbreviations into plain layman terms.
+                Converts complex clinical lab shorthand and test abbreviations
+                into plain layman terms.
               </p>
             </div>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
@@ -223,7 +247,8 @@ export default function LabReportsPage() {
                 2. Average Health Score
               </h3>
               <p className="text-xs text-slate-600">
-                Computes an intelligent average health index from 1-100 across all verified parameters.
+                Computes an intelligent average health index from 1-100 across
+                all verified parameters.
               </p>
             </div>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
@@ -231,7 +256,8 @@ export default function LabReportsPage() {
                 3. Demographic Standards
               </h3>
               <p className="text-xs text-slate-600">
-                Provides standard clinical reference values broken down across age brackets and gender.
+                Provides standard clinical reference values broken down across
+                age brackets and gender.
               </p>
             </div>
           </div>
