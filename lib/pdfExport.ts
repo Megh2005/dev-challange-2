@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { PrescriptionScanResult, PrescribedMedicine } from "@/types/prescription";
+import { LabReportAnalysisResult, LabReportParameter } from "@/types/labReport";
 
 // Helper to parse timetable shorthand into slots
 function parseTimetable(freqStr: string) {
@@ -552,3 +553,499 @@ export function exportPrescriptionToPdf(result: PrescriptionScanResult) {
   const fileName = `Prescription_Report_${safePatient}_${new Date().toISOString().slice(0, 10)}.pdf`;
   doc.save(fileName);
 }
+
+export function exportLabReportToPdf(result: LabReportAnalysisResult) {
+  // A4 Dimensions: 210mm x 297mm
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+    compress: true
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 14;
+  const contentWidth = pageWidth - margin * 2; // 182mm
+  let y = margin;
+
+  // Strict Typography Rules matching prescription template:
+  // 1. Monospace font: "courier"
+  // 2. Black and white ONLY: Text [0,0,0], Borders [0,0,0], Backgrounds [255,255,255]
+  // 3. Weight: "normal" or "bold"
+  // 4. ITALICS STRICTLY PROHIBITED
+  const setMonospace = (weight: "normal" | "bold" = "normal", sizePt = 10) => {
+    doc.setFont("courier", weight);
+    doc.setFontSize(sizePt);
+    doc.setTextColor(0, 0, 0);
+    doc.setDrawColor(0, 0, 0);
+    doc.setFillColor(255, 255, 255);
+  };
+
+  const ensureSpace = (neededHeight: number) => {
+    if (y + neededHeight > pageHeight - margin - 14) {
+      doc.addPage();
+      y = margin;
+    }
+  };
+
+  // ===========================================================================
+  // DOCUMENT HEADER & TITLE
+  // ===========================================================================
+  setMonospace("bold", 12);
+  doc.text("PATHOLOGICAL LABORATORY REPORT & HEALTH SCORE ANALYSIS TRANSCRIPT", pageWidth / 2, y, {
+    align: "center"
+  });
+  y += 5;
+
+  setMonospace("normal", 8);
+  doc.text("AUTOMATED CLINICAL PATHOLOGY OCR & DEMOGRAPHIC REFERENCE ANALYSIS", pageWidth / 2, y, {
+    align: "center"
+  });
+  y += 4;
+
+  // Double horizontal rule
+  doc.setLineWidth(0.4);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 1;
+  doc.setLineWidth(0.2);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 4.5;
+
+  // Metadata Line
+  setMonospace("normal", 7.5);
+  doc.text(`RECORD ID: ${(result.id || "LAB-REP").slice(0, 16)}`, margin, y);
+  doc.text(`REPORT DATE: ${result.patient.reportDate || "Not Specified"}`, pageWidth / 2, y, { align: "center" });
+  doc.text(`EXPORT DATE: ${new Date().toISOString().slice(0, 10)}`, pageWidth - margin, y, { align: "right" });
+  y += 3.5;
+
+  doc.setLineWidth(0.2);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 4;
+
+  // ===========================================================================
+  // SECTION 1: LABORATORY & PATIENT PROFILES (GRID TABLE WITH ALL BORDERS PRESENT)
+  // ===========================================================================
+  ensureSpace(40);
+
+  const labLines = [
+    `DIAGNOSTIC LABORATORY: ${result.patient.labName || "Diagnostic Pathology Laboratory"}`,
+    `REFERRED BY: ${result.patient.referredByDoctor || "Self / Clinical Referral"}`,
+    `REPORT DATE: ${result.patient.reportDate || "Not Specified"}`,
+    result.patient.collectionDate ? `COLLECTION DATE: ${result.patient.collectionDate}` : "",
+    `TOTAL PARAMETERS EXTRACTED: ${result.keyFindings.totalTestsCount}`
+  ].filter(Boolean).join("\n");
+
+  const patLines = [
+    `PATIENT: ${result.patient.name}`,
+    `AGE/GENDER: ${result.patient.age || "N/A"} / ${result.patient.gender || "N/A"}`,
+    `OVERALL HEALTH SCORE: ${result.healthScore.score} / 100`,
+    `CLINICAL RATING: ${result.healthScore.rating.toUpperCase()}`,
+    `STATUS BREAKDOWN: ${result.keyFindings.normalCount} Normal | ${result.keyFindings.deviatedCount} Mild | ${result.keyFindings.criticalCount} Attention`
+  ].filter(Boolean).join("\n");
+
+  autoTable(doc, {
+    startY: y,
+    head: [["DIAGNOSTIC LABORATORY PROFILE", "PATIENT RECORD & HEALTH INDEX"]],
+    body: [[labLines, patLines]],
+    theme: "grid",
+    styles: {
+      font: "courier",
+      fontStyle: "normal",
+      fontSize: 7.5,
+      textColor: [0, 0, 0],
+      fillColor: [255, 255, 255],
+      lineColor: [0, 0, 0],
+      lineWidth: 0.25,
+      cellPadding: 3,
+      overflow: "linebreak"
+    },
+    headStyles: {
+      font: "courier",
+      fontStyle: "bold",
+      fontSize: 8,
+      textColor: [0, 0, 0],
+      fillColor: [255, 255, 255],
+      lineColor: [0, 0, 0],
+      lineWidth: 0.35,
+      halign: "left"
+    },
+    columnStyles: {
+      0: { cellWidth: contentWidth / 2 },
+      1: { cellWidth: contentWidth / 2 }
+    },
+    margin: { left: margin, right: margin }
+  });
+
+  // @ts-expect-error autoTable adds lastAutoTable to doc
+  y = doc.lastAutoTable.finalY + 5;
+
+  // ===========================================================================
+  // SECTION 2: HEALTH SCORE & KEY FINDINGS SUMMARY
+  // ===========================================================================
+  ensureSpace(35);
+
+  setMonospace("bold", 8.5);
+  doc.text("SECTION 2: HEALTH SCORE INDEX & CLINICAL SUMMARY", margin, y);
+  y += 2.5;
+
+  const scoreSummaryText =
+    `AVERAGE HEALTH SCORE: ${result.healthScore.score} / 100 (${result.healthScore.rating.toUpperCase()})\n\n` +
+    `CLINICAL ASSESSMENT SUMMARY:\n${result.healthScore.summary}`;
+
+  const summaryBody: string[][] = [
+    [scoreSummaryText],
+    [
+      `METRIC TALLY:\n` +
+      `* Total Test Parameters: ${result.keyFindings.totalTestsCount}\n` +
+      `* Normal (Optimal) Parameters: ${result.keyFindings.normalCount}\n` +
+      `* Mild Deviations: ${result.keyFindings.deviatedCount}\n` +
+      `* Parameters Requiring Attention: ${result.keyFindings.criticalCount}`
+    ]
+  ];
+
+  if (result.criticalAlerts && result.criticalAlerts.length > 0) {
+    summaryBody.push([
+      `PRIORITY CLINICAL ATTENTION ITEMS:\n` +
+      result.criticalAlerts.map((a) => `! ${a}`).join("\n")
+    ]);
+  }
+
+  autoTable(doc, {
+    startY: y,
+    head: [["HEALTH SCORE & CLINICAL ASSESSMENT OVERVIEW"]],
+    body: summaryBody,
+    theme: "grid",
+    styles: {
+      font: "courier",
+      fontStyle: "normal",
+      fontSize: 7.2,
+      textColor: [0, 0, 0],
+      fillColor: [255, 255, 255],
+      lineColor: [0, 0, 0],
+      lineWidth: 0.25,
+      cellPadding: 3,
+      overflow: "linebreak"
+    },
+    headStyles: {
+      font: "courier",
+      fontStyle: "bold",
+      fontSize: 8,
+      textColor: [0, 0, 0],
+      fillColor: [255, 255, 255],
+      lineColor: [0, 0, 0],
+      lineWidth: 0.35,
+      halign: "left"
+    },
+    margin: { left: margin, right: margin }
+  });
+
+  // @ts-expect-error autoTable adds lastAutoTable to doc
+  y = doc.lastAutoTable.finalY + 5;
+
+  // ===========================================================================
+  // SECTION 3: COMPREHENSIVE CLINICAL PARAMETERS MASTER TABLE
+  // ===========================================================================
+  ensureSpace(35);
+
+  setMonospace("bold", 8.5);
+  doc.text("SECTION 3: COMPREHENSIVE CLINICAL PARAMETERS MASTER TABLE", margin, y);
+  y += 2.5;
+
+  const paramTableHead = [
+    [
+      "NO",
+      "TEST & COMMON NAME",
+      "CATEGORY",
+      "OBSERVED RESULT",
+      "STATUS",
+      "STANDARD RANGE",
+      "DEMOGRAPHIC STANDARDS"
+    ]
+  ];
+
+  const paramTableBody = result.parameters.map((p, idx) => {
+    let demoStr = "";
+    if (p.referenceStandards.genderStandards) {
+      demoStr += `M: ${p.referenceStandards.genderStandards.male}\nF: ${p.referenceStandards.genderStandards.female}`;
+    } else {
+      demoStr = "General adult standard";
+    }
+
+    return [
+      String(idx + 1),
+      `${p.testName}\n(${p.commonName})`,
+      p.category,
+      `${p.observedValue} ${p.unit}`,
+      p.statusLabel.toUpperCase(),
+      p.referenceStandards.standardRange,
+      demoStr
+    ];
+  });
+
+  // Column widths sum: 8 + 42 + 28 + 24 + 22 + 30 + 28 = 182mm (exact contentWidth)
+  autoTable(doc, {
+    startY: y,
+    head: paramTableHead,
+    body: paramTableBody,
+    theme: "grid",
+    styles: {
+      font: "courier",
+      fontStyle: "normal",
+      fontSize: 7,
+      textColor: [0, 0, 0],
+      fillColor: [255, 255, 255],
+      lineColor: [0, 0, 0],
+      lineWidth: 0.2,
+      cellPadding: 2,
+      halign: "left",
+      valign: "middle",
+      overflow: "linebreak"
+    },
+    headStyles: {
+      font: "courier",
+      fontStyle: "bold",
+      fontSize: 7.5,
+      textColor: [0, 0, 0],
+      fillColor: [255, 255, 255],
+      lineColor: [0, 0, 0],
+      lineWidth: 0.3,
+      halign: "center"
+    },
+    columnStyles: {
+      0: { cellWidth: 8, halign: "center" },
+      1: { cellWidth: 42, fontStyle: "bold" },
+      2: { cellWidth: 28 },
+      3: { cellWidth: 24, fontStyle: "bold", halign: "center" },
+      4: { cellWidth: 22, fontStyle: "bold", halign: "center" },
+      5: { cellWidth: 30 },
+      6: { cellWidth: 28 }
+    },
+    margin: { left: margin, right: margin }
+  });
+
+  // @ts-expect-error autoTable adds lastAutoTable to doc
+  y = doc.lastAutoTable.finalY + 5;
+
+  // ===========================================================================
+  // SECTION 4: DETAILED PARAMETER LAYMAN INTERPRETATIONS & DEMOGRAPHIC STANDARDS
+  // ===========================================================================
+  ensureSpace(25);
+
+  setMonospace("bold", 8.5);
+  doc.text("SECTION 4: DETAILED PARAMETER LAYMAN INTERPRETATIONS & STANDARDS", margin, y);
+  y += 2.5;
+
+  result.parameters.forEach((param: LabReportParameter, idx: number) => {
+    ensureSpace(35);
+
+    let demographicText = "";
+    if (param.referenceStandards.genderStandards) {
+      demographicText += `* Men (Male): ${param.referenceStandards.genderStandards.male}\n* Women (Female): ${param.referenceStandards.genderStandards.female}\n`;
+    }
+    if (param.referenceStandards.ageStandards && param.referenceStandards.ageStandards.length > 0) {
+      demographicText += param.referenceStandards.ageStandards.map((a) => `* Age ${a.ageGroup}: ${a.range}`).join("\n") + "\n";
+    }
+    if (param.referenceStandards.regionOrLocationNote) {
+      demographicText += `* Regional Reference Context: ${param.referenceStandards.regionOrLocationNote}`;
+    }
+    if (!demographicText) {
+      demographicText = `General Adult Standard: ${param.referenceStandards.standardRange}`;
+    }
+
+    const paramDetailBody = [
+      [
+        "INVESTIGATION & CATEGORY",
+        `${param.testName} (${param.commonName}) | Category: ${param.category}`
+      ],
+      [
+        "OBSERVED RESULT & STATUS",
+        `${param.observedValue} ${param.unit} | Clinical Status: ${param.statusLabel.toUpperCase()} (Standard: ${param.referenceStandards.standardRange})`
+      ],
+      [
+        "WHAT THIS TEST MEASURES",
+        param.laymanExplanation
+      ],
+      [
+        "WHAT THIS PORTRAYS FOR HEALTH",
+        param.whatItPortrays
+      ],
+      [
+        "DEMOGRAPHIC STANDARDS BREAKDOWN",
+        demographicText.trim()
+      ],
+      [
+        "ACTIONABLE LIFESTYLE TIP",
+        param.actionableTip || "Maintain balanced nutrition, adequate hydration, and periodic routine checkups."
+      ]
+    ];
+
+    autoTable(doc, {
+      startY: y,
+      head: [[`[PARAMETER ${idx + 1}] ${param.testName.toUpperCase()} - ${param.commonName.toUpperCase()} [${param.statusLabel.toUpperCase()}]`, ""]],
+      body: paramDetailBody,
+      theme: "grid",
+      styles: {
+        font: "courier",
+        fontStyle: "normal",
+        fontSize: 7.2,
+        textColor: [0, 0, 0],
+        fillColor: [255, 255, 255],
+        lineColor: [0, 0, 0],
+        lineWidth: 0.2,
+        cellPadding: 2,
+        overflow: "linebreak"
+      },
+      headStyles: {
+        font: "courier",
+        fontStyle: "bold",
+        fontSize: 8,
+        textColor: [0, 0, 0],
+        fillColor: [255, 255, 255],
+        lineColor: [0, 0, 0],
+        lineWidth: 0.3,
+        halign: "left"
+      },
+      columnStyles: {
+        0: { cellWidth: 55, fontStyle: "bold" },
+        1: { cellWidth: contentWidth - 55 }
+      },
+      margin: { left: margin, right: margin }
+    });
+
+    // @ts-expect-error autoTable adds lastAutoTable to doc
+    y = doc.lastAutoTable.finalY + 4;
+  });
+
+  // ===========================================================================
+  // SECTION 5: LIFESTYLE GUIDANCE & QUESTIONS TO ASK PHYSICIAN
+  // ===========================================================================
+  ensureSpace(35);
+
+  setMonospace("bold", 8.5);
+  doc.text("SECTION 5: CLINICAL CONSULTATION & LIFESTYLE GUIDANCE", margin, y);
+  y += 2.5;
+
+  const lifestyleText = result.lifestyleRecommendations && result.lifestyleRecommendations.length > 0
+    ? result.lifestyleRecommendations.map((r, i) => `${i + 1}. ${r}`).join("\n\n")
+    : "Follow standard healthy dietary and physical activity recommendations.";
+
+  const questionsText = result.doctorDiscussionQuestions && result.doctorDiscussionQuestions.length > 0
+    ? result.doctorDiscussionQuestions.map((q, i) => `Q${i + 1}: ${q}`).join("\n\n")
+    : "Discuss current lab parameters and trend progression with your physician.";
+
+  autoTable(doc, {
+    startY: y,
+    head: [["EVERYDAY LIFESTYLE & DIETARY GUIDANCE", "QUESTIONS TO ASK YOUR PHYSICIAN"]],
+    body: [[lifestyleText, questionsText]],
+    theme: "grid",
+    styles: {
+      font: "courier",
+      fontStyle: "normal",
+      fontSize: 7.2,
+      textColor: [0, 0, 0],
+      fillColor: [255, 255, 255],
+      lineColor: [0, 0, 0],
+      lineWidth: 0.25,
+      cellPadding: 3,
+      overflow: "linebreak"
+    },
+    headStyles: {
+      font: "courier",
+      fontStyle: "bold",
+      fontSize: 7.8,
+      textColor: [0, 0, 0],
+      fillColor: [255, 255, 255],
+      lineColor: [0, 0, 0],
+      lineWidth: 0.35,
+      halign: "left"
+    },
+    columnStyles: {
+      0: { cellWidth: contentWidth / 2 },
+      1: { cellWidth: contentWidth / 2 }
+    },
+    margin: { left: margin, right: margin }
+  });
+
+  // @ts-expect-error autoTable adds lastAutoTable to doc
+  y = doc.lastAutoTable.finalY + 5;
+
+  // ===========================================================================
+  // SECTION 6: MANDATORY CLINICAL & LEGAL DISCLAIMER
+  // ===========================================================================
+  ensureSpace(28);
+
+  const disclaimerNotice =
+    "MANDATORY LEGAL & CLINICAL VERIFICATION NOTICE:\n" +
+    "ALL RESPONSES AND DATA CONTAINED IN THIS DOCUMENT ARE GENERATED BY AN ARTIFICIAL " +
+    "INTELLIGENCE (AI) AGENT UTILIZING COMPUTER VISION OPTICAL CHARACTER RECOGNITION (OCR) " +
+    "AND PATHOLOGICAL KNOWLEDGE PROCESSING.\n\n" +
+    "ALL EXTRACTED VALUES, PARAMETER NAMES, REFERENCE RANGES, HEALTH SCORES, AND INTERPRETATIONS " +
+    "ARE SUBJECT TO MACHINE-INTERPRETATION AND LABORATORY REPORT SCAN VARIANCE LIMITATIONS. " +
+    "THIS TRANSCRIPT DOES NOT CONSTITUTE MEDICAL ADVICE, A FORMAL DIAGNOSIS, OR A SUBSTITUTE " +
+    "FOR CLINICAL CONSULTATION.\n\n" +
+    "CRITICAL REQUIREMENT: YOU MUST DIRECTLY CROSS-VERIFY ALL EXTRACTED LAB READINGS, " +
+    "REFERENCE RANGES, AND HEALTH SCORES WITH A QUALIFIED CLINICAL PATHOLOGIST OR LICENSED " +
+    "PHYSICIAN BEFORE TAKING ANY CLINICAL ACTION, DIETARY RESTRICTION, OR TREATMENT ALTERATION. " +
+    "THE APPLICATION OPERATORS AND DEVELOPERS EXPRESSLY DISCLAIM ALL LIABILITY FOR CLINICAL " +
+    "ERRORS, OMISSIONS, OR ADVERSE EVENTS RESULTING FROM RELIANCE ON THIS AI-GENERATED REPORT.";
+
+  autoTable(doc, {
+    startY: y,
+    body: [[disclaimerNotice]],
+    theme: "grid",
+    styles: {
+      font: "courier",
+      fontStyle: "bold",
+      fontSize: 6.8,
+      textColor: [0, 0, 0],
+      fillColor: [255, 255, 255],
+      lineColor: [0, 0, 0],
+      lineWidth: 0.35,
+      cellPadding: 3,
+      halign: "left",
+      overflow: "linebreak"
+    },
+    margin: { left: margin, right: margin }
+  });
+
+  // ===========================================================================
+  // PAGE NUMBERS & RUNNING HEADER/FOOTER (DRAWN ACROSS ALL PAGES)
+  // ===========================================================================
+  const totalPages = doc.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+
+    // Page border
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.25);
+    doc.rect(margin / 2, margin / 2, pageWidth - margin, pageHeight - margin);
+
+    // Running footer rule
+    doc.line(margin, pageHeight - margin + 1, pageWidth - margin, pageHeight - margin + 1);
+
+    // Running footer text
+    doc.setFont("courier", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(0, 0, 0);
+
+    doc.text(
+      "CONFIDENTIAL MEDICAL LAB TRANSCRIPT",
+      margin,
+      pageHeight - margin + 4.5
+    );
+
+    doc.text(
+      `PAGE ${p} OF ${totalPages}`,
+      pageWidth - margin,
+      pageHeight - margin + 4.5,
+      { align: "right" }
+    );
+  }
+
+  // Generate safe filename and trigger download
+  const safePatient = (result.patient.name || "Patient").replace(/[^a-zA-Z0-9]/g, "_");
+  const fileName = `LabReport_Analysis_${safePatient}_${new Date().toISOString().slice(0, 10)}.pdf`;
+  doc.save(fileName);
+}
+
