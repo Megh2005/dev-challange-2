@@ -6,19 +6,13 @@ import {
   isGemmaEngineLoaded,
   checkWebGpuSupport,
 } from "@/lib/gemmaLiteRtEngine";
-import {
-  isModelCached,
-  getCachedModelBlob,
-  downloadAndCacheGemmaModel,
-} from "@/lib/gemmaModelManager";
-import { GEMMA_MODEL_CONFIG, DownloadProgress } from "@/types/gemma";
+import { GEMMA_MODEL_CONFIG } from "@/types/gemma";
 import {
   CpuIcon,
   DownloadIcon,
   HardDriveIcon,
   CheckCircleIcon,
   AlertCircleIcon,
-  RefreshCwIcon,
 } from "./icons";
 
 interface Props {
@@ -33,12 +27,8 @@ export default function GemmaModelSetupGate({
   description = "Download the official Gemma model artifact to your device, then load it manually from your local disk. Once initialized on WebGPU, MediScan unlocks on-device vision analysis and private clinical deciphering.",
 }: Props) {
   const [isEngineReady, setIsEngineReady] = useState(false);
-  const [isCached, setIsCached] = useState(false);
   const [loadedFileName, setLoadedFileName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [downloadProgress, setDownloadProgress] =
-    useState<DownloadProgress | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [webGpuInfo, setWebGpuInfo] = useState<{
     supported: boolean;
@@ -50,10 +40,6 @@ export default function GemmaModelSetupGate({
   useEffect(() => {
     checkWebGpuSupport().then((res) => {
       setWebGpuInfo(res);
-    });
-
-    isModelCached().then((cached) => {
-      setIsCached(cached);
     });
 
     if (isGemmaEngineLoaded()) {
@@ -82,64 +68,6 @@ export default function GemmaModelSetupGate({
           "Failed to mount the selected model artifact on WebGPU. Verify that you selected a valid .litertlm file."
       );
       setIsEngineReady(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle loading from browser Cache Storage if already downloaded
-  const handleLoadFromCache = async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    try {
-      const blob = await getCachedModelBlob();
-      if (!blob) {
-        throw new Error(
-          "No cached model found in browser storage. Please download or select the model file manually."
-        );
-      }
-
-      await initGemmaEngine(blob);
-      setIsEngineReady(true);
-      setLoadedFileName(GEMMA_MODEL_CONFIG.filename);
-      if (onModelReady) onModelReady();
-    } catch (err: any) {
-      console.error("Cache load error:", err);
-      setErrorMessage(
-        err?.message || "Failed to initialize engine from cached binary."
-      );
-      setIsEngineReady(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Direct in-browser download with progress bar
-  const handleStartDownload = async () => {
-    setIsDownloading(true);
-    setErrorMessage(null);
-
-    try {
-      const blob = await downloadAndCacheGemmaModel((progress) => {
-        setDownloadProgress(progress);
-      });
-
-      setIsCached(true);
-      setIsLoading(true);
-      setIsDownloading(false);
-
-      await initGemmaEngine(blob);
-      setIsEngineReady(true);
-      setLoadedFileName(GEMMA_MODEL_CONFIG.filename);
-      if (onModelReady) onModelReady();
-    } catch (err: any) {
-      console.error("Direct download failure:", err);
-      setErrorMessage(
-        err?.message ||
-          "Direct browser download failed. You can also use the manual download link to download the file directly via your browser."
-      );
-      setIsDownloading(false);
     } finally {
       setIsLoading(false);
     }
@@ -253,7 +181,7 @@ export default function GemmaModelSetupGate({
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed font-medium">
                   Download the official Google Gemma 4 E2B model artifact
-                  compiled for LiteRT LM WebGPU. Save it locally on your computer.
+                  compiled for LiteRT LM WebGPU. Save it to your local storage.
                 </p>
                 <div className="p-3 bg-white border border-slate-200 rounded-xl text-xs space-y-1 font-mono">
                   <p className="text-slate-800 font-bold truncate">
@@ -263,34 +191,16 @@ export default function GemmaModelSetupGate({
                 </div>
               </div>
 
-              <div className="space-y-2 pt-2">
+              <div className="pt-2">
                 <a
                   href={GEMMA_MODEL_CONFIG.huggingFaceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 px-4 rounded-xl bg-blue-700 text-white font-extrabold text-xs hover:bg-blue-800 transition-colors flex items-center justify-center space-x-2 shadow-sm text-center"
+                  className="w-full py-3.5 px-4 rounded-xl bg-blue-700 text-white font-extrabold text-xs hover:bg-blue-800 transition-colors flex items-center justify-center space-x-2 shadow-sm text-center"
                 >
                   <DownloadIcon className="w-4 h-4" />
-                  <span>Download Gemma 4 E2B from Website (.litertlm)</span>
+                  <span>Download Gemma 4 E2B (.litertlm)</span>
                 </a>
-
-                <button
-                  type="button"
-                  onClick={handleStartDownload}
-                  disabled={isDownloading || isLoading}
-                  className="w-full py-2.5 px-4 rounded-xl bg-white border border-slate-300 text-slate-800 font-bold text-xs hover:bg-slate-100 disabled:opacity-50 transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
-                >
-                  <RefreshCwIcon
-                    className={`w-3.5 h-3.5 text-slate-600 ${
-                      isDownloading ? "animate-spin" : ""
-                    }`}
-                  />
-                  <span>
-                    {isDownloading
-                      ? "Downloading via Browser Stream..."
-                      : "Stream & Cache in Browser Directly"}
-                  </span>
-                </button>
               </div>
             </div>
 
@@ -319,7 +229,7 @@ export default function GemmaModelSetupGate({
                 </div>
               </div>
 
-              <div className="space-y-2 pt-2">
+              <div className="pt-2">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -330,53 +240,15 @@ export default function GemmaModelSetupGate({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isLoading || isDownloading}
-                  className="w-full py-3 px-4 rounded-xl bg-slate-900 text-white font-extrabold text-xs hover:bg-black disabled:opacity-50 transition-colors flex items-center justify-center space-x-2 shadow-sm cursor-pointer"
+                  disabled={isLoading}
+                  className="w-full py-3.5 px-4 rounded-xl bg-slate-900 text-white font-extrabold text-xs hover:bg-black disabled:opacity-50 transition-colors flex items-center justify-center space-x-2 shadow-sm cursor-pointer"
                 >
                   <HardDriveIcon className="w-4 h-4 text-blue-400" />
                   <span>Select Model from Local Storage</span>
                 </button>
-
-                {isCached && (
-                  <button
-                    type="button"
-                    onClick={handleLoadFromCache}
-                    disabled={isLoading || isDownloading}
-                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-700 text-white font-bold text-xs hover:bg-emerald-800 disabled:opacity-50 transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
-                  >
-                    <CheckCircleIcon className="w-3.5 h-3.5" />
-                    <span>Quick-Load from Browser Cache</span>
-                  </button>
-                )}
               </div>
             </div>
           </div>
-
-          {/* Download Progress Bar */}
-          {isDownloading && downloadProgress && (
-            <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-2xl space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-blue-950">
-                <span>Downloading Gemma 4 E2B Binary...</span>
-                <span>{downloadProgress.percentage}%</span>
-              </div>
-              <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
-                <div
-                  className="bg-blue-700 h-3 rounded-full transition-all duration-200"
-                  style={{ width: `${downloadProgress.percentage}%` }}
-                ></div>
-              </div>
-              <div className="flex items-center justify-between text-[11px] text-blue-700 font-mono">
-                <span>
-                  {(downloadProgress.receivedBytes / (1024 * 1024)).toFixed(1)}{" "}
-                  MB downloaded
-                </span>
-                <span>
-                  Total:{" "}
-                  {(downloadProgress.totalBytes / (1024 * 1024)).toFixed(1)} MB
-                </span>
-              </div>
-            </div>
-          )}
 
           {/* Loading Indicator */}
           {isLoading && (

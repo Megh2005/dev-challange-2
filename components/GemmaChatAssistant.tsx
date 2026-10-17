@@ -7,28 +7,14 @@ import {
   isGemmaEngineLoaded,
   streamGemmaChat,
   cancelGemmaGeneration,
-  cleanupGemmaEngine,
   checkWebGpuSupport,
 } from "@/lib/gemmaLiteRtEngine";
-import {
-  isModelCached,
-  getCachedModelBlob,
-  downloadAndCacheGemmaModel,
-  clearGemmaModelCache,
-} from "@/lib/gemmaModelManager";
-import {
-  ModelState,
-  DownloadProgress,
-  ChatMessage,
-  GEMMA_MODEL_CONFIG,
-} from "@/types/gemma";
+import { ModelState, ChatMessage, GEMMA_MODEL_CONFIG } from "@/types/gemma";
 import {
   CpuIcon,
   MessageSquareIcon,
   CloseIcon,
   SendIcon,
-  TrashIcon,
-  CheckCircleIcon,
   AlertCircleIcon,
   HardDriveIcon,
   RefreshCwIcon,
@@ -55,10 +41,7 @@ export default function GemmaChatAssistant({
   ],
 }: Props) {
   const [modelState, setModelState] = useState<ModelState>("unloaded");
-  const [downloadProgress, setDownloadProgress] =
-    useState<DownloadProgress | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isCached, setIsCached] = useState<boolean>(false);
   const [webGpuStatus, setWebGpuStatus] = useState<{
     supported: boolean;
     message: string;
@@ -69,14 +52,10 @@ export default function GemmaChatAssistant({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const localFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check WebGPU & Cache state on mount
+  // Check WebGPU state on mount
   useEffect(() => {
     checkWebGpuSupport().then((status) => {
       setWebGpuStatus(status);
-    });
-
-    isModelCached().then((cached) => {
-      setIsCached(cached);
     });
 
     if (isGemmaEngineLoaded()) {
@@ -88,49 +67,6 @@ export default function GemmaChatAssistant({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // Handle Download & Load Model
-  const handleLoadModel = async () => {
-    setErrorMessage(null);
-
-    if (!webGpuStatus.supported) {
-      setErrorMessage(
-        "WebGPU is not enabled or supported in this browser. Please use Chrome 113+ or Edge 113+ with WebGPU enabled."
-      );
-      return;
-    }
-
-    try {
-      setModelState("downloading");
-
-      const modelBlob = await downloadAndCacheGemmaModel((prog) => {
-        setDownloadProgress(prog);
-      });
-
-      setModelState("loading");
-      await initGemmaEngine(modelBlob);
-      setModelState("ready");
-      setIsCached(true);
-
-      // Append initial greeting
-      setMessages([
-        {
-          id: `msg_${Date.now()}`,
-          role: "assistant",
-          content:
-            "Hello, I am your on-device clinical companion powered by Google Gemma 4 E2B running entirely in your browser over WebGPU. Your medical records and questions never leave your device. How can I assist you with your prescription or lab findings?",
-          timestamp: Date.now(),
-        },
-      ]);
-    } catch (err: any) {
-      console.error("Gemma loading error:", err);
-      setModelState("error");
-      setErrorMessage(
-        err?.message ||
-          "Failed to load Gemma 4 E2B model artifact into WebGPU memory."
-      );
-    }
-  };
 
   // Handle Local File Selection
   const handleSelectLocalModelFile = async (
@@ -236,18 +172,6 @@ export default function GemmaChatAssistant({
     ]);
   };
 
-  // Clear cache
-  const handleClearCache = async () => {
-    const confirmed = window.confirm(
-      "Purge the cached Gemma 4 E2B model binary from browser Cache Storage to free space?"
-    );
-    if (confirmed) {
-      await clearGemmaModelCache();
-      setIsCached(false);
-      setErrorMessage("Gemma model cache cleared from browser storage.");
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -280,7 +204,7 @@ export default function GemmaChatAssistant({
                 type="button"
                 onClick={handleResetConversation}
                 title="Reset conversation"
-                className="p-2 rounded-lg text-slate-600 hover:text-black hover:bg-slate-200 transition-colors"
+                className="p-2 rounded-lg text-slate-600 hover:text-black hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <RefreshCwIcon className="w-4 h-4" />
               </button>
@@ -289,7 +213,7 @@ export default function GemmaChatAssistant({
               type="button"
               onClick={onClose}
               title="Close Assistant"
-              className="p-2 rounded-lg text-slate-600 hover:text-black hover:bg-slate-200 transition-colors"
+              className="p-2 rounded-lg text-slate-600 hover:text-black hover:bg-slate-200 transition-colors cursor-pointer"
             >
               <CloseIcon className="w-5 h-5" />
             </button>
@@ -305,44 +229,16 @@ export default function GemmaChatAssistant({
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Model Status: {modelState.toUpperCase()}
                 </span>
-                {isCached && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded">
-                    Stored in Browser Cache
-                  </span>
-                )}
               </div>
               <h3 className="text-base font-extrabold text-black">
                 Load Gemma 4 E2B into Browser WebGPU
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 MediScan executes Google&apos;s open-weights Gemma 4 E2B model
-                directly on your device using LiteRT LM and WebGPU. All clinical
-                analysis runs locally with complete medical privacy.
+                directly on your device using LiteRT LM and WebGPU. Select your
+                downloaded .litertlm file below to activate on-device inference.
               </p>
             </div>
-
-            {/* Download Progress Bar */}
-            {modelState === "downloading" && downloadProgress && (
-              <div className="space-y-2 p-3 bg-white border border-slate-300 rounded-xl">
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span>Downloading Model Artifact...</span>
-                  <span className="text-blue-700">
-                    {downloadProgress.percentage}%
-                  </span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                  <div
-                    className="bg-blue-700 h-2.5 rounded-full transition-all duration-200"
-                    style={{ width: `${downloadProgress.percentage}%` }}
-                  ></div>
-                </div>
-                <p className="text-[11px] text-slate-500 text-right">
-                  {(downloadProgress.receivedBytes / (1024 * 1024)).toFixed(1)}{" "}
-                  MB /{" "}
-                  {(downloadProgress.totalBytes / (1024 * 1024)).toFixed(1)} MB
-                </p>
-              </div>
-            )}
 
             {modelState === "loading" && (
               <div className="p-3 bg-white border border-slate-300 rounded-xl flex items-center space-x-3 text-xs font-bold text-slate-700">
@@ -357,46 +253,32 @@ export default function GemmaChatAssistant({
             {/* Action Buttons to Load */}
             {modelState === "unloaded" && (
               <div className="space-y-3 pt-1">
+                <input
+                  type="file"
+                  ref={localFileInputRef}
+                  accept=".litertlm"
+                  onChange={handleSelectLocalModelFile}
+                  className="hidden"
+                />
                 <button
                   type="button"
-                  onClick={handleLoadModel}
+                  onClick={() => localFileInputRef.current?.click()}
                   disabled={!webGpuStatus.supported}
-                  className="w-full py-3 px-4 rounded-xl bg-blue-700 text-white font-extrabold text-sm hover:bg-blue-800 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2 shadow-sm"
+                  className="w-full py-3.5 px-4 rounded-xl bg-slate-900 text-white font-extrabold text-sm hover:bg-black disabled:opacity-50 transition-colors flex items-center justify-center space-x-2 shadow-sm cursor-pointer"
                 >
-                  <CpuIcon className="w-4 h-4" />
-                  <span>
-                    {isCached
-                      ? "Load Gemma 4 E2B from Browser Cache"
-                      : "Download & Load Gemma 4 E2B (~1.3 GB)"}
-                  </span>
+                  <HardDriveIcon className="w-4 h-4 text-blue-400" />
+                  <span>Select Local Gemma 4 E2B (.litertlm)</span>
                 </button>
 
-                <div className="flex items-center justify-between pt-1">
-                  <input
-                    type="file"
-                    ref={localFileInputRef}
-                    accept=".litertlm"
-                    onChange={handleSelectLocalModelFile}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => localFileInputRef.current?.click()}
-                    className="text-xs font-bold text-slate-700 hover:text-black underline flex items-center space-x-1"
+                <div className="text-center pt-1">
+                  <a
+                    href={GEMMA_MODEL_CONFIG.huggingFaceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-bold text-blue-700 hover:text-blue-900 underline inline-flex items-center space-x-1"
                   >
-                    <HardDriveIcon className="w-3.5 h-3.5" />
-                    <span>Select local .litertlm file</span>
-                  </button>
-
-                  {isCached && (
-                    <button
-                      type="button"
-                      onClick={handleClearCache}
-                      className="text-xs font-bold text-red-600 hover:text-red-800 underline"
-                    >
-                      Clear cached binary
-                    </button>
-                  )}
+                    <span>Download Gemma 4 E2B model binary from website</span>
+                  </a>
                 </div>
               </div>
             )}
@@ -493,7 +375,7 @@ export default function GemmaChatAssistant({
                   key={idx}
                   type="button"
                   onClick={() => handleSendMessage(q)}
-                  className="px-2.5 py-1 text-xs font-medium rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-200 hover:text-black text-left transition-colors truncate max-w-xs"
+                  className="px-2.5 py-1 text-xs font-medium rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-200 hover:text-black text-left transition-colors truncate max-w-xs cursor-pointer"
                 >
                   {q}
                 </button>
@@ -509,7 +391,7 @@ export default function GemmaChatAssistant({
             <button
               type="button"
               onClick={() => setErrorMessage(null)}
-              className="text-xs font-bold underline shrink-0"
+              className="text-xs font-bold underline shrink-0 cursor-pointer"
             >
               Dismiss
             </button>
@@ -542,7 +424,7 @@ export default function GemmaChatAssistant({
               <button
                 type="button"
                 onClick={handleCancelGeneration}
-                className="py-3 px-4 rounded-xl bg-red-600 text-white font-bold text-xs hover:bg-red-700 transition-colors"
+                className="py-3 px-4 rounded-xl bg-red-600 text-white font-bold text-xs hover:bg-red-700 transition-colors cursor-pointer"
               >
                 Stop
               </button>
@@ -550,7 +432,7 @@ export default function GemmaChatAssistant({
               <button
                 type="submit"
                 disabled={modelState !== "ready" || !inputText.trim()}
-                className="p-3 rounded-xl bg-blue-700 text-white font-bold text-sm hover:bg-blue-800 disabled:opacity-40 transition-colors"
+                className="p-3 rounded-xl bg-blue-700 text-white font-bold text-sm hover:bg-blue-800 disabled:opacity-40 transition-colors cursor-pointer"
                 title="Send Message"
               >
                 <SendIcon className="w-4 h-4" />
