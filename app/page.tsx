@@ -2,9 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { FileTextIcon, ArrowRightIcon } from "@/components/icons";
 
 export default function HomePage() {
+  const { data: session } = useSession();
+
   const coreHighlights = [
     {
       title: "Plain-Language Timing",
@@ -21,8 +24,8 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="w-full bg-white text-black h-[92vh] flex items-center justify-center">
-      <main className="w-[80vw] mx-auto text-center flex flex-col items-center justify-center">
+    <div className="w-full bg-white text-black min-h-[90vh] py-12 flex items-center justify-center">
+      <main className="w-[85vw] max-w-6xl mx-auto text-center flex flex-col items-center justify-center">
         {/* Category Tag */}
         <span className="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-full mb-6">
           Prescription OCR &amp; Medical Translation
@@ -39,23 +42,32 @@ export default function HomePage() {
         </p>
 
         {/* Primary Call to Action */}
-        <div className="mt-8">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/scan"
-            className="px-8 py-4 rounded-xl bg-blue-700 text-white font-bold text-base hover:bg-blue-800 transition-colors inline-flex items-center space-x-2"
+            className="px-8 py-4 rounded-xl bg-blue-700 text-white font-bold text-base hover:bg-blue-800 transition-colors inline-flex items-center space-x-2 shadow-sm"
           >
             <FileTextIcon className="w-5 h-5" />
-            <span>Scan Prescription Now</span>
+            <span>{session?.user ? "Go to Prescription Scanner" : "Scan Prescription Now"}</span>
             <ArrowRightIcon className="w-4 h-4 ml-1" />
           </Link>
+
+          {!session?.user && (
+            <Link
+              href="/auth/signup"
+              className="px-6 py-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-base transition-colors inline-flex items-center space-x-1"
+            >
+              <span>Create Account</span>
+            </Link>
+          )}
         </div>
 
         {/* 3 Core Highlights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-[80vw] mt-12 text-left">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-12 text-left">
           {coreHighlights.map((item, idx) => (
             <div
               key={idx}
-              className="p-5 rounded-xl border border-slate-200 bg-white hover:border-blue-600 transition-colors"
+              className="p-6 rounded-xl border border-slate-200 bg-white hover:border-blue-600 transition-colors shadow-xs"
             >
               <h2 className="text-base font-bold text-black mb-1.5">
                 {item.title}
