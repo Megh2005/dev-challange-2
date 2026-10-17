@@ -28,7 +28,9 @@ function SignInContent() {
   useEffect(() => {
     if (errorParam) {
       if (errorParam === "CredentialsSignin") {
-        setErrorMessage("Invalid email or password. Please check your credentials.");
+        setErrorMessage(
+          "Invalid email or password. Please check your credentials.",
+        );
       } else if (errorParam === "SessionRequired") {
         setErrorMessage("Please sign in to access that page.");
       } else {
@@ -53,12 +55,14 @@ function SignInContent() {
       const res = await signIn("credentials", {
         email: cleanEmail,
         password,
-        redirect: false
+        redirect: false,
       });
 
       if (!res?.ok || res.error) {
         if (res?.error === "CredentialsSignin") {
-          setErrorMessage("Invalid email or password. Please verify your credentials.");
+          setErrorMessage(
+            "Invalid email or password. Please verify your credentials.",
+          );
         } else {
           setErrorMessage(res?.error || "Failed to sign in. Please try again.");
         }
@@ -69,7 +73,9 @@ function SignInContent() {
       }
     } catch (err) {
       setErrorMessage(
-        err instanceof Error ? err.message : "An unexpected error occurred. Please try again."
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again.",
       );
       setIsLoading(false);
     }
@@ -88,19 +94,30 @@ function SignInContent() {
               MediScan Auth
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-black tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-black ">
             Sign In to Your Account
           </h1>
           <p className="text-xs text-slate-600">
-            Access prescription deciphering, routine timetables, and pharmacy price checks.
+            Access prescription deciphering, routine timetables, and pharmacy
+            price checks.
           </p>
         </div>
 
         {/* Success Banner */}
         {successMessage && (
           <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold rounded-xl flex items-center space-x-2">
-            <svg className="w-4 h-4 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            <svg
+              className="w-4 h-4 shrink-0 text-emerald-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             <span>{successMessage}</span>
           </div>
@@ -109,8 +126,18 @@ function SignInContent() {
         {/* Error Banner */}
         {errorMessage && (
           <div className="p-3.5 bg-red-50 border border-red-200 text-red-900 text-xs font-semibold rounded-xl flex items-start space-x-2">
-            <svg className="w-4 h-4 shrink-0 text-red-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-4 h-4 shrink-0 text-red-600 mt-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             <span>{errorMessage}</span>
           </div>
@@ -189,7 +216,9 @@ export default function SignInPage() {
     <Suspense
       fallback={
         <div className="min-h-[85vh] flex items-center justify-center bg-slate-50">
-          <div className="text-sm font-semibold text-slate-500">Loading sign in...</div>
+          <div className="text-sm font-semibold text-slate-500">
+            Loading sign in...
+          </div>
         </div>
       }
     >
