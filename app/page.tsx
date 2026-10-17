@@ -11,39 +11,36 @@ export default function HomePage() {
   const coreHighlights = [
     {
       title: "Plain-Language Timing",
-      desc: "Translates doctor shorthand like OD, BD, TDS, and PC into everyday instructions like 'Take twice a day after meals'."
+      desc: "Translates doctor shorthand like OD, BD, TDS, and PC into everyday instructions like 'Take twice a day after meals'.",
     },
     {
       title: "Active Chemical Composition",
-      desc: "Identifies the exact active chemical ingredients, what condition the medicine is for, and key safety rules."
+      desc: "Identifies the exact active chemical ingredients, what condition the medicine is for, and key safety rules.",
     },
     {
       title: "Diagnostic Lab Tests",
-      desc: "Detects recommended blood, urine, or imaging investigations with clinical purpose and fasting preparation rules."
+      desc: "Detects recommended blood, urine, or imaging investigations with clinical purpose and fasting preparation rules.",
     },
     {
       title: "Pathology Health Score",
-      desc: "Upload blood reports to compute an average health score and decode parameters with age and gender standards."
-    }
+      desc: "Upload blood reports to compute an average health score and decode parameters with age and gender standards.",
+    },
   ];
 
   return (
     <div className="w-full bg-white text-black min-h-[90vh] py-12 flex items-center justify-center">
-      <main className="w-[85vw] max-w-6xl mx-auto text-center flex flex-col items-center justify-center">
+      <main className="w-[85vw] max-w-[80vw] mx-auto text-center flex flex-col items-center justify-center">
         {/* Category Tag */}
         <span className="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-full mb-6">
           Prescription OCR &amp; Medical Translation
         </span>
 
         {/* Hero Title */}
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-black tracking-tight leading-tight max-w-3xl">
-          Clear, Understandable Prescription Information for Everyone
+        <h1 className="text-3xl sm:text-5xl font-extrabold text-black   max-w-3xl">
+          Clear &amp; Understandable Medical Information for Everyone
         </h1>
 
-        {/* Hero Description */}
-        <p className="text-base sm:text-lg text-slate-600 max-w-2xl mt-4 leading-relaxed">
-          Upload any doctor&apos;s prescription. Instantly translate complex medical shorthand into plain daily schedules, identify active chemical ingredients, and review ordered diagnostic tests with total clarity.
-        </p>
+       
 
         {/* Primary Call to Action */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -52,7 +49,11 @@ export default function HomePage() {
             className="px-8 py-4 rounded-xl bg-blue-700 text-white font-bold text-base hover:bg-blue-800 transition-colors inline-flex items-center space-x-2 shadow-sm"
           >
             <FileTextIcon className="w-5 h-5" />
-            <span>{session?.user ? "Go to Prescription Scanner" : "Scan Prescription Now"}</span>
+            <span>
+              {session?.user
+                ? "Go to Prescription Scanner"
+                : "Scan Prescription Now"}
+            </span>
             <ArrowRightIcon className="w-4 h-4 ml-1" />
           </Link>
 
