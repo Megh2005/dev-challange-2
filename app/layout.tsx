@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Roboto_Slab } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import AuthProvider from "@/components/AuthProvider";
 
-const inter = Inter({
+const roboto_slab = Roboto_Slab({
   subsets: ["latin"],
   display: "swap",
 });
@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-white text-black min-h-screen flex flex-col`}>
+      <body className={`${roboto_slab.className} bg-white text-black min-h-screen flex flex-col`}>
         <AuthProvider>
           <Navbar />
           <main className="flex-1 bg-white">{children}</main>

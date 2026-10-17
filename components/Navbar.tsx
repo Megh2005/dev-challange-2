@@ -13,23 +13,20 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/scan", label: "Scan Prescription", icon: FileTextIcon },
-    { href: "/reports", label: "Pathology Reports", icon: FileTextIcon }
+    { href: "/reports", label: "Pathology Reports", icon: FileTextIcon },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white border-b border-slate-200 h-16 flex items-center shadow-xs">
-      <div className="w-[85vw] max-w-7xl mx-auto flex items-center justify-between">
+    <header className="sticky top-0 z-40 w-full bg-white border-b border-slate-200 h-[5rem] flex items-center shadow-xl">
+      <div className="w-[85vw] max-w-[90vw] mx-auto flex items-center justify-between">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center space-x-3 text-black">
-          <div className="w-9 h-9 rounded-lg bg-blue-700 flex items-center justify-center text-white shadow-xs">
-            <MedicalCrossIcon className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-lg bg-blue-700 flex items-center justify-center text-white shadow-xs">
+            <MedicalCrossIcon className="w-10 h-10" />
           </div>
           <div>
-            <span className="font-extrabold text-lg text-black tracking-tight block leading-tight">
+            <span className="font-extrabold text-3xl text-black  block ">
               MediScan
-            </span>
-            <span className="text-xs text-slate-500 font-medium">
-              Clinical Prescription Intelligence
             </span>
           </div>
         </Link>
